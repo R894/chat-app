@@ -37,8 +37,12 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 
 		messages := routes.Group("/messages")
 		{
-			messages.POST("/", handlers.CreateMessage)
-			messages.GET("/:chatId", handlers.GetMessages)
+			messages.POST("/", func(c *gin.Context) {
+				handlers.CreateMessage(c, repo)
+			})
+			messages.GET("/:chatId", func(c *gin.Context) {
+				handlers.GetMessages(c, repo)
+			})
 		}
 
 	}
