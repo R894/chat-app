@@ -15,6 +15,16 @@ func CreateChat(c *gin.Context, r *repository.Repository) {
 		return
 	}
 
+	// Check if chat already exists
+	res, _ := r.Chats.FindChatByMembers(c, createChatRequest.Members[0], createChatRequest.Members[1])
+
+	// Return the chat if it already exists
+	if res != nil {
+		c.JSON(http.StatusOK, res)
+		return
+	}
+
+	// Otherwise create it
 	chat, err := r.Chats.Insert(c, createChatRequest)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -7,8 +7,8 @@ import (
 )
 
 type Chat struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Members   []string           `bson:"members,omitempty"`
-	CreatedAt time.Time          `bson:"createdAt,omitempty"`
-	UpdatedAt time.Time          `bson:"updatedAt,omitempty"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
+	Members   []string           `bson:"members,omitempty" json:"members"`
+	CreatedAt time.Time          `bson:"createdAt,omitempty" json:"createdAt"`
+	UpdatedAt time.Time          `bson:"updatedAt,omitempty" json:"updatedAt"`
 }
