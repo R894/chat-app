@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,17 +30,48 @@ func FindUser(c *gin.Context, r *repository.Repository) {
 }
 
 func RegisterUser(c *gin.Context, r *repository.Repository) {
+	validate := validator.New()
 	var registerRequest repository.RegisterUserRequest
 	if err := c.ShouldBindJSON(&registerRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	err := validate.Struct(registerRequest)
+	if err != nil {
+		var validationErrors []string
+		for _, e := range err.(validator.ValidationErrors) {
+			validationErrors = append(validationErrors, e.Field()+" is not in the expected format")
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{"errors": validationErrors})
+		return
+	}
+
+	hashedPassword, err := auth.HashPassword(registerRequest.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "Something went wrong")
+		return
+	}
+	registerRequest.Password = hashedPassword
 	user, err := r.Users.InsertUser(c, registerRequest)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	key, err := auth.GenerateJwtKey(user.ID.String())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "Something went wrong")
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"_id":       user.ID,
+		"name":      user.Name,
+		"email":     user.Email,
+		"createdAt": user.CreatedAt,
+		"updatedAt": user.UpdatedAt,
+		"token":     key,
+	})
 }
 
 func LoginUser(c *gin.Context, r *repository.Repository) {
@@ -48,6 +80,7 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	user, err := r.Users.FindByEmail(c, loginRequest.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -59,13 +92,17 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 	}
 
 	err = auth.VerifyPassword(user.Password, loginRequest.Password)
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Bad request")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	key, err := auth.GenerateJwtKey(user.ID.String())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Bad request")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"name": user.Name, "email": user.Email, "token": key})
 }
 
 func GetUsers(c *gin.Context, r *repository.Repository) {

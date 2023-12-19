@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-chatserver/internal/models"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -75,6 +76,8 @@ func (r *UserRepository) InsertUser(ctx context.Context, userRequest RegisterUse
 	user.Name = userRequest.Name
 	user.Password = userRequest.Password
 	user.Email = userRequest.Email
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 	result, err := r.collection.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
