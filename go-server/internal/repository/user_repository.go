@@ -11,9 +11,9 @@ import (
 )
 
 type RegisterUserRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Name     string `json:"name" binding:"required" validate:"required,min=4,max=15"`
+	Email    string `json:"email" binding:"required" validate:"required,email"`
+	Password string `json:"password" binding:"required" validate:"required,min=6"`
 }
 
 // UserRepository handles database operations related to users
@@ -67,7 +67,6 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	if err != nil {
 		return nil, err
 	}
-
 	return &user, nil
 }
 

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"go-chatserver/internal/api"
 	"go-chatserver/internal/database"
+	"go-chatserver/internal/rest"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv := api.NewServer(db, router)
+	srv := rest.NewServer(db, router)
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}

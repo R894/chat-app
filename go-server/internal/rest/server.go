@@ -1,8 +1,8 @@
-package api
+package rest
 
 import (
-	"go-chatserver/internal/api/routes"
 	"go-chatserver/internal/repository"
+	"go-chatserver/internal/rest/routes"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"

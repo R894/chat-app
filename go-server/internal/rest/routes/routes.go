@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"go-chatserver/internal/api/handlers"
 	"go-chatserver/internal/repository"
+	"go-chatserver/internal/rest/handlers"
 
 	"github.com/gin-gonic/gin"
 )
