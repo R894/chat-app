@@ -16,7 +16,7 @@ func CreateChat(c *gin.Context, r *repository.Repository) {
 	}
 
 	// Check if chat already exists
-	res, _ := r.Chats.FindChatByMembers(c, createChatRequest.Members[0], createChatRequest.Members[1])
+	res, _ := r.Chats.FindChatByMembers(c, createChatRequest.FirstId, createChatRequest.SecondId)
 
 	// Return the chat if it already exists
 	if res != nil {

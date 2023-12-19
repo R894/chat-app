@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"go-chatserver/internal/models"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,14 +16,6 @@ type CreateMessageRequest struct {
 	Text     string `json:"text" binding:"required"`
 }
 
-type Message struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	ChatId    string             `bson:"chatId,omitempty" json:"chatId"`
-	Text      string             `bson:"text,omitempty" json:"text"`
-	CreatedAt time.Time          `bson:"createdAt,omitempty" json:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt,omitempty" json:"updatedAt"`
-}
-
 // MessageRepository handles database operations related to messages
 // Validations are not expected here but rather at the handler level
 type MessageRepository struct {
@@ -33,10 +26,11 @@ func NewMessageRepository(collection *mongo.Collection) *MessageRepository {
 	return &MessageRepository{collection: collection}
 }
 
-func (r *MessageRepository) Insert(ctx context.Context, message CreateMessageRequest) (*Message, error) {
-	newMessage := Message{
+func (r *MessageRepository) Insert(ctx context.Context, message CreateMessageRequest) (*models.Message, error) {
+	newMessage := models.Message{
 		ChatId:    message.ChatId,
 		Text:      message.Text,
+		SenderId:  message.SenderId,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -49,10 +43,10 @@ func (r *MessageRepository) Insert(ctx context.Context, message CreateMessageReq
 	return &newMessage, nil
 }
 
-func (r *MessageRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*Message, error) {
+func (r *MessageRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*models.Message, error) {
 	filter := primitive.M{"_id": id}
 
-	var message Message
+	var message models.Message
 	err := r.collection.FindOne(ctx, filter).Decode(&message)
 	if err != nil {
 		return nil, err
@@ -61,7 +55,7 @@ func (r *MessageRepository) FindByID(ctx context.Context, id primitive.ObjectID)
 	return &message, nil
 }
 
-func (r *MessageRepository) FindByChatID(ctx context.Context, chatID string) ([]Message, error) {
+func (r *MessageRepository) FindByChatID(ctx context.Context, chatID string) ([]*models.Message, error) {
 	filter := bson.M{
 		"chatId": chatID,
 	}
@@ -72,7 +66,7 @@ func (r *MessageRepository) FindByChatID(ctx context.Context, chatID string) ([]
 	}
 	defer cursor.Close(ctx)
 
-	var messages []Message
+	var messages []*models.Message
 	err = cursor.All(ctx, &messages)
 	if err != nil {
 		return nil, err

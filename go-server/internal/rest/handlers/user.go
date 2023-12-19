@@ -102,7 +102,11 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 		c.JSON(http.StatusBadRequest, "Bad request")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"name": user.Name, "email": user.Email, "token": key})
+	c.JSON(http.StatusOK, gin.H{
+		"_id":   user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+		"token": key})
 }
 
 func GetUsers(c *gin.Context, r *repository.Repository) {

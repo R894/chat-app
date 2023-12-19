@@ -11,7 +11,8 @@ import (
 )
 
 type CreateChatRequest struct {
-	Members []string `json:"members" binding:"required"`
+	FirstId  string `json:"firstId" binding:"required"`
+	SecondId string `json:"secondId" binding:"required"`
 }
 
 // ChatRepository handles database operations related to chats
@@ -38,7 +39,7 @@ func (r *ChatRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*
 
 func (r *ChatRepository) Insert(ctx context.Context, chatReq CreateChatRequest) (*models.Chat, error) {
 	chat := models.Chat{
-		Members:   chatReq.Members,
+		Members:   []string{chatReq.FirstId, chatReq.SecondId},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

@@ -72,7 +72,7 @@ export const ChatContextProvider = ({
 
   useEffect(() => {
     const getUsers = async () => {
-      const response = await getRequest(`${baseUrl}/users`);
+      const response = await getRequest(`${baseUrl}/users/`);
       if (response.error) {
         return console.log("Error fetching users", response);
       }
@@ -96,7 +96,7 @@ export const ChatContextProvider = ({
       if (user?._id) {
         setIsUserChatsLoading(true);
         setUserChatsError(null);
-        const response = await getRequest(`${baseUrl}/chat/${user._id}`);
+        const response = await getRequest(`${baseUrl}/chats/${user._id}`);
         setIsUserChatsLoading(false);
         if (response.error) {
           console.log(response);
@@ -137,7 +137,7 @@ export const ChatContextProvider = ({
       if (!textMessage) return console.log("Message can't be empty...");
 
       const response = await postRequest(
-        `${baseUrl}/messages`,
+        `${baseUrl}/messages/`,
         JSON.stringify({
           chatId: currentChatId,
           senderId: sender._id,
@@ -148,7 +148,7 @@ export const ChatContextProvider = ({
         return setTextMessageError(response);
       }
       setNewMessage(response);
-      setMessages((prev) => [...prev, response]);
+      setMessages((prev) => [...(prev || []), response]);
       setTextMessage("");
     },
     []
@@ -160,7 +160,7 @@ export const ChatContextProvider = ({
 
   const createChat = useCallback(async (firstId, secondId) => {
     const response = await postRequest(
-      `${baseUrl}/chat`,
+      `${baseUrl}/chats/`,
       JSON.stringify({ firstId, secondId })
     );
     if (response.error) {

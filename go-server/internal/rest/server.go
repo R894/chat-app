@@ -23,6 +23,7 @@ func NewServer(db *mongo.Client, router *gin.Engine) *server {
 }
 
 func (s *server) Start() error {
+
 	routes.SetupRoutes(s.router, s.repository)
 	return s.router.Run()
 }
