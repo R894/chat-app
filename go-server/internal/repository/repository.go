@@ -3,6 +3,7 @@ package repository
 import "go.mongodb.org/mongo-driver/mongo"
 
 // Repository compiles all the repositories into a single struct
+// Validations are not expected here but rather at the handler level
 type Repository struct {
 	Messages MessageRepository
 	Chats    ChatRepository

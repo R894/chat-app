@@ -24,6 +24,7 @@ type Message struct {
 }
 
 // MessageRepository handles database operations related to messages
+// Validations are not expected here but rather at the handler level
 type MessageRepository struct {
 	collection *mongo.Collection
 }

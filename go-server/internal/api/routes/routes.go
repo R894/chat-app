@@ -29,10 +29,18 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 
 		users := routes.Group("/users")
 		{
-			users.GET("/", handlers.GetUsers)
-			users.POST("/register", handlers.RegisterUser)
-			users.POST("/login", handlers.LoginUser)
-			users.GET("/find/:userId", handlers.FindUser)
+			users.GET("/", func(c *gin.Context) {
+				handlers.GetUsers(c, repo)
+			})
+			users.POST("/register", func(c *gin.Context) {
+				handlers.RegisterUser(c, repo)
+			})
+			users.POST("/login", func(c *gin.Context) {
+				handlers.LoginUser(c, repo)
+			})
+			users.GET("/find/:userId", func(c *gin.Context) {
+				handlers.FindUser(c, repo)
+			})
 		}
 
 		messages := routes.Group("/messages")

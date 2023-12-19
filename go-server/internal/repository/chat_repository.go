@@ -15,6 +15,7 @@ type CreateChatRequest struct {
 }
 
 // ChatRepository handles database operations related to chats
+// Validations are not expected here but rather at the handler level
 type ChatRepository struct {
 	collection *mongo.Collection
 }
