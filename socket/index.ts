@@ -5,6 +5,7 @@ interface User {
   socketId: string;
 }
 
+// Keeping active users in an array is a terrible idea but whatever for now
 let onlineUsers: User[] = [];
 
 const io = new Server({
@@ -28,7 +29,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", (message)=>{
-    const user = onlineUsers.find(user = user.userId === message.recipientId)
+    const user = onlineUsers.find((user) => user.userId === message.recipientId)
 
     if(user){
       io.to(user.socketId).emit("getMessage", message)
@@ -42,4 +43,5 @@ io.on("connection", (socket) => {
   });
 });
 
+console.log("Server running on port 3000")
 io.listen(3000);
