@@ -1,8 +1,14 @@
 package rest
 
 import (
+	"context"
+	"fmt"
+	"go-chatserver/internal/database"
 	"go-chatserver/internal/repository"
 	"go-chatserver/internal/rest/routes"
+	"log"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,8 +28,35 @@ func NewServer(db *mongo.Client, router *gin.Engine) *server {
 	}
 }
 
-func (s *server) Start() error {
-
+func (s *server) Start(ctx context.Context) error {
 	routes.SetupRoutes(s.router, s.repository)
-	return s.router.Run()
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: s.router,
+	}
+
+	defer func() {
+		database.CloseMongoDB(s.db)
+	}()
+
+	ch := make(chan error, 1)
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			ch <- fmt.Errorf("Failed to start server: %w", err)
+		}
+		close(ch)
+	}()
+
+	select {
+	case err := <-ch:
+		return err
+	case <-ctx.Done():
+		log.Println("Received interrupt signal. Starting graceful shutdown...")
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		return server.Shutdown(timeout)
+	}
 }
