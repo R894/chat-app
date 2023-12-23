@@ -1,4 +1,4 @@
-import UserCard from "./Usercard";
+import UserCard from "./UserCard";
 
 const Userinfo = () => {
     return ( <div className="bg-base-300 p-2">
