@@ -8,6 +8,7 @@ import (
 	"go-chatserver/internal/rest/routes"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,8 +31,12 @@ func NewServer(db *mongo.Client, router *gin.Engine) *server {
 
 func (s *server) Start(ctx context.Context) error {
 	routes.SetupRoutes(s.router, s.repository)
+	port := os.Getenv("PORT")
+	if port == "" {
+
+	}
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%s", port),
 		Handler: s.router,
 	}
 
@@ -46,6 +51,7 @@ func (s *server) Start(ctx context.Context) error {
 		if err != nil {
 			ch <- fmt.Errorf("Failed to start server: %w", err)
 		}
+		fmt.Println("Server running on port 5000")
 		close(ch)
 	}()
 
