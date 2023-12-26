@@ -71,6 +71,60 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	return &user, nil
 }
 
+func (r *UserRepository) InsertFriendRequest(ctx context.Context, userId, friendId string) (bool, error) {
+	// convert friendId string to objId
+	friendObjId, err := primitive.ObjectIDFromHex(friendId)
+	if err != nil {
+		return false, fmt.Errorf("error converting ID to ObjectID: %v", err)
+	}
+
+	// find the user, return false if doesnt exist
+	var friend models.User
+	err = r.collection.FindOne(ctx, primitive.M{"_id": friendObjId}).Decode(&friend)
+	if err != nil {
+		return false, err
+	}
+
+	// append the new id into the pending friend requests array
+	friend.PendingRequests = append(friend.PendingRequests, userId)
+
+	// update the friend document in the database
+	update := bson.M{"$set": bson.M{"pendingRequests": friend.PendingRequests}}
+	_, err = r.collection.UpdateOne(ctx, primitive.M{"_id": friendObjId}, update)
+	if err != nil {
+		return false, fmt.Errorf("error updating: %v", err)
+	}
+
+	return true, nil
+}
+
+func (r *UserRepository) InsertFriend(ctx context.Context, userId, friendId string) (bool, error) {
+	// convert userId string to objId
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return false, fmt.Errorf("error converting ID to ObjectID: %v", err)
+	}
+
+	// find the user, return false if doesnt exist
+	var user models.User
+	err = r.collection.FindOne(ctx, primitive.M{"_id": userObjId}).Decode(&user)
+	if err != nil {
+		return false, err
+	}
+
+	// append the new id into the friendslist array
+	user.FriendsList = append(user.FriendsList, friendId)
+
+	// update the friend document in the database
+	update := bson.M{"$set": bson.M{"friendsList": user.FriendsList}}
+	_, err = r.collection.UpdateOne(ctx, primitive.M{"_id": userObjId}, update)
+	if err != nil {
+		return false, fmt.Errorf("error updating: %v", err)
+	}
+
+	return true, nil
+}
+
 func (r *UserRepository) InsertUser(ctx context.Context, userRequest RegisterUserRequest) (*models.User, error) {
 	var user models.User
 	user.Name = userRequest.Name
