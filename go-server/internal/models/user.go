@@ -7,10 +7,12 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	Name      string             `bson:"name,omitempty" json:"name"`
-	Email     string             `bson:"email,omitempty" json:"email"`
-	Password  string             `bson:"password,omitempty" json:"-"`
-	CreatedAt time.Time          `bson:"createdAt,omitempty" json:"createdAt"`
-	UpdatedAt time.Time          `bson:"updatedAt,omitempty" json:"updatedAt"`
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
+	Name            string             `bson:"name,omitempty" json:"name"`
+	Email           string             `bson:"email,omitempty" json:"email"`
+	Password        string             `bson:"password,omitempty" json:"-"`
+	CreatedAt       time.Time          `bson:"createdAt,omitempty" json:"createdAt"`
+	UpdatedAt       time.Time          `bson:"updatedAt,omitempty" json:"updatedAt"`
+	PendingRequests []string           `bson:"pendingRequests,omitempty" json:"pendingRequests,omitempty"`
+	FriendsList     []string           `bson:"friendsList,omitempty" json:"friendsList"`
 }
