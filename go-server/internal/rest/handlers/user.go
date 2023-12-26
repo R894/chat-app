@@ -16,6 +16,11 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type FriendRequest struct {
+	UserId   string `json:"userId"`
+	FriendId string `json:"friendId"`
+}
+
 func FindUser(c *gin.Context, r *repository.Repository) {
 	id := c.Param("userId")
 	result, err := r.Users.FindByID(c, id)
@@ -72,6 +77,22 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 		"updatedAt": user.UpdatedAt,
 		"token":     key,
 	})
+}
+
+func SendFriendRequest(c *gin.Context, r *repository.Repository) {
+	var friendRequest FriendRequest
+	if err := c.ShouldBindJSON(&friendRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := r.Users.InsertFriendRequest(c, friendRequest.UserId, friendRequest.FriendId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Bad request")
+		return
+	}
+	c.JSON(http.StatusOK, "Request sent")
 }
 
 func LoginUser(c *gin.Context, r *repository.Repository) {

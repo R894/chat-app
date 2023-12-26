@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-chatserver/internal/models"
+	"go-chatserver/internal/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -71,6 +72,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	return &user, nil
 }
 
+// InsertFriendRequest appends userId into the friendRequest array of the User with friendId
 func (r *UserRepository) InsertFriendRequest(ctx context.Context, userId, friendId string) (bool, error) {
 	// convert friendId string to objId
 	friendObjId, err := primitive.ObjectIDFromHex(friendId)
@@ -93,6 +95,34 @@ func (r *UserRepository) InsertFriendRequest(ctx context.Context, userId, friend
 	_, err = r.collection.UpdateOne(ctx, primitive.M{"_id": friendObjId}, update)
 	if err != nil {
 		return false, fmt.Errorf("error updating: %v", err)
+	}
+
+	return true, nil
+}
+
+// DeleteFriendRequest removes friendId from the pendingRequest array of the user with userId
+func (r *UserRepository) DeleteFriendRequest(ctx context.Context, userId, friendId string) (bool, error) {
+	// convert userId string to objId
+	userObjId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return false, fmt.Errorf("error converting ID to ObjectID: %v", err)
+	}
+
+	// find the user, return false if doesnt exist
+	var user models.User
+	err = r.collection.FindOne(ctx, primitive.M{"_id": userObjId}).Decode(&user)
+	if err != nil {
+		return false, err
+	}
+
+	// remove friendId from pendingRequests array
+	user.PendingRequests = utils.RemoveStringFromArray(user.PendingRequests, friendId)
+
+	// update the friend document in the database
+	update := bson.M{"$set": bson.M{"pendingRequests": user.PendingRequests}}
+	_, err = r.collection.UpdateOne(ctx, primitive.M{"_id": userObjId}, update)
+	if err != nil {
+		return false, fmt.Errorf("error updating user document: %v", err)
 	}
 
 	return true, nil
