@@ -29,7 +29,7 @@ func FindUser(c *gin.Context, r *repository.Repository) {
 			c.JSON(http.StatusNotFound, "Not Found")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, "Internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
 	}
 	c.JSON(http.StatusOK, result)
 }
@@ -54,7 +54,7 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 
 	hashedPassword, err := auth.HashPassword(registerRequest.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "Something went wrong")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
 		return
 	}
 	registerRequest.Password = hashedPassword
@@ -65,7 +65,7 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 	}
 	key, err := auth.GenerateJwtKey(user.ID.String())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, "Something went wrong")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
 		return
 	}
 
@@ -79,6 +79,36 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 	})
 }
 
+func AcceptFriendRequest(c *gin.Context, r *repository.Repository) {
+	var request FriendRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := r.Users.InsertFriend(c, request.UserId, request.FriendId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong"})
+		return
+	}
+	// friendship goes both ways!
+	_, err = r.Users.InsertFriend(c, request.FriendId, request.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong"})
+		return
+	}
+
+	// remove the friend request from the user afterwards
+	_, err = r.Users.DeleteFriendRequest(c, request.UserId, request.FriendId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "friend request accepted"})
+
+}
+
 func SendFriendRequest(c *gin.Context, r *repository.Repository) {
 	var friendRequest FriendRequest
 	if err := c.ShouldBindJSON(&friendRequest); err != nil {
@@ -89,10 +119,10 @@ func SendFriendRequest(c *gin.Context, r *repository.Repository) {
 	_, err := r.Users.InsertFriendRequest(c, friendRequest.UserId, friendRequest.FriendId)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, "Bad request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to send friend request"})
 		return
 	}
-	c.JSON(http.StatusOK, "Request sent")
+	c.JSON(http.StatusOK, gin.H{"message": "Friend request sent"})
 }
 
 func LoginUser(c *gin.Context, r *repository.Repository) {
@@ -105,22 +135,22 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 	user, err := r.Users.FindByEmail(c, loginRequest.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			c.JSON(http.StatusNotFound, "Not Found")
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, "Internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	err = auth.VerifyPassword(user.Password, loginRequest.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, "Bad request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
 	}
 
 	key, err := auth.GenerateJwtKey(user.ID.String())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, "Bad request")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
@@ -134,11 +164,11 @@ func GetUsers(c *gin.Context, r *repository.Repository) {
 	users, err := r.Users.GetAllUsers(c)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			c.JSON(http.StatusNotFound, "Not Found")
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, "Internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, users)
