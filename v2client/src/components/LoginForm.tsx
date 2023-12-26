@@ -20,47 +20,54 @@ const LoginForm = () => {
         console.log(response.error);
         return;
       }
+      localStorage.setItem("user", JSON.stringify(response));
       setUser(response);
       console.log("Logged in as:", response);
     } catch (err) {
       console.error("An error occurred:", err);
-    } finally{
-      setisLoading(false)
+    } finally {
+      setisLoading(false);
     }
   };
 
   return (
     <div className="container flex justify-center items-center">
-      <div className="bg-base-200 min-w-72 p-4 flex flex-col shadow-md">
-        <h1 className="text text-center font-bold pb-2">Login</h1>
-        <label className="form-control w-full">
-          <div className="label">
-            <span className="label-text text-xs">Email</span>
-          </div>
-          <input
-            type="email"
-            className="input input-bordered bg-base-300 rounded-none h-8 border-none w-full"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="form-control w-full pb-4">
-          <div className="label">
-            <span className="label-text text-xs">Password</span>
-          </div>
-          <input
-            type="password"
-            className="input input-bordered bg-base-300 rounded-none h-8 border-none w-full"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <p className="text-xs pb-1">
-          No account?{" "}
-          <Link to="/register">Sign up</Link>
-        </p>
-        <button className="btn btn-primary text-white" onClick={handleClick}>
-          {isLoading ? "Loading" : "Continue"}
-        </button>
-      </div>
+      {isLoading ? (
+        <span className="loading loading-dots loading-lg" />
+      ) : (
+        <div className="bg-base-200 min-w-72 p-4 flex flex-col shadow-md">
+          <h1 className="text text-center font-bold pb-2">Login</h1>
+          <label className="form-control w-full">
+            <div className="label">
+              <span className="label-text text-xs">Email</span>
+            </div>
+            <input
+              type="email"
+              className="input input-bordered bg-base-300 rounded-none h-8 border-none w-full"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <label className="form-control w-full pb-4">
+            <div className="label">
+              <span className="label-text text-xs">Password</span>
+            </div>
+            <input
+              type="password"
+              className="input input-bordered bg-base-300 rounded-none h-8 border-none w-full"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </label>
+          <p className="text-xs pb-1">
+            No account?{" "}
+            <Link to="/register" className="text-accent">
+              Sign up
+            </Link>
+          </p>
+          <button className="btn btn-primary text-white" onClick={handleClick}>
+            Continue
+          </button>
+        </div>
+      )}
     </div>
   );
 };
