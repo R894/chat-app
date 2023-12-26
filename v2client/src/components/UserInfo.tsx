@@ -3,10 +3,36 @@ import UserCard from "./UserCard";
 import AuthContext from "../context/AuthContext";
 
 const Userinfo = () => {
-    const {user} = useContext(AuthContext)
-    return ( <div className="bg-base-300 p-2">
-        {user && <UserCard username={user?.name}/>}
-    </div> );
-}
- 
+  const { user, setUser } = useContext(AuthContext);
+
+  const logoutHandler = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
+  return (
+    <div className="bg-base-300 p-2 flex justify-between">
+      {user && <UserCard username={user?.name} />}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="w-auto h-6 hover:cursor-pointer"
+        width="16"
+        height="16"
+        fill="currentColor"
+        viewBox="0 0 16 16"
+        onClick={logoutHandler}
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"
+        />
+        <path
+          fill-rule="evenodd"
+          d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"
+        />
+      </svg>
+    </div>
+  );
+};
+
 export default Userinfo;
