@@ -6,13 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  token: string;
-}
+import { User } from "../types/types";
 
 interface AuthContextProps {
   user: User | null;
