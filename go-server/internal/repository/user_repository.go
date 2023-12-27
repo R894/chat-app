@@ -72,6 +72,39 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	return &user, nil
 }
 
+func (r *UserRepository) GetUserFriends(ctx context.Context, userId string) ([]models.User, error) {
+
+	user, err := r.FindByID(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert friendslist strings to objectIds because im dumb and didnt do that before
+	var objectIds []primitive.ObjectID
+	for _, friendId := range user.FriendsList {
+		objID, err := primitive.ObjectIDFromHex(friendId)
+		if err != nil {
+			return nil, err
+		}
+		objectIds = append(objectIds, objID)
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIds}}
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var friends []models.User
+	err = cursor.All(ctx, &friends)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(friends)
+	return friends, nil
+}
+
 // InsertFriendRequest appends userId into the friendRequest array of the User with friendId
 func (r *UserRepository) InsertFriendRequest(ctx context.Context, userId, friendId string) (bool, error) {
 	// convert friendId string to objId

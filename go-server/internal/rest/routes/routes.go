@@ -57,10 +57,13 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 			users.GET("/find/:userId", func(c *gin.Context) {
 				handlers.FindUser(c, repo)
 			})
-			users.POST("friends/add/", func(c *gin.Context) {
+			users.POST("/friends", func(c *gin.Context) {
+				handlers.GetUserFriends(c, repo)
+			})
+			users.POST("/friends/add", func(c *gin.Context) {
 				handlers.SendFriendRequest(c, repo)
 			})
-			users.POST("friends/accept/", func(c *gin.Context) {
+			users.POST("/friends/accept", func(c *gin.Context) {
 				handlers.AcceptFriendRequest(c, repo)
 			})
 		}

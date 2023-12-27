@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"go-chatserver/internal/auth"
 	"go-chatserver/internal/repository"
 	"net/http"
@@ -12,13 +13,16 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
+type GetUserFriendsRequest struct {
+	UserId string `json:"userId" binding:"required"`
+}
 type FriendRequest struct {
-	UserId   string `json:"userId"`
-	FriendId string `json:"friendId"`
+	UserId   string `json:"userId" binding:"required"`
+	FriendId string `json:"friendId" binding:"required"`
 }
 
 func FindUser(c *gin.Context, r *repository.Repository) {
@@ -30,6 +34,7 @@ func FindUser(c *gin.Context, r *repository.Repository) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
+		return
 	}
 	c.JSON(http.StatusOK, result)
 }
@@ -172,4 +177,20 @@ func GetUsers(c *gin.Context, r *repository.Repository) {
 		return
 	}
 	c.JSON(http.StatusOK, users)
+}
+
+func GetUserFriends(c *gin.Context, r *repository.Repository) {
+	var userId GetUserFriendsRequest
+	if err := c.ShouldBindJSON(&userId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		return
+	}
+
+	friends, err := r.Users.GetUserFriends(c, userId.UserId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching friends"})
+		fmt.Println(err)
+		return
+	}
+	c.JSON(http.StatusOK, friends)
 }
