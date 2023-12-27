@@ -1,6 +1,10 @@
+import { useContext } from "react";
 import UserCard from "./UserCard";
+import { ChatContext } from "../context/ChatContext";
 
 const UserList = () => {
+  const {friends} = useContext(ChatContext)
+  
   return (
     <div className="p-4 flex-grow max-h-screen overflow-hidden">
       <input
@@ -11,25 +15,11 @@ const UserList = () => {
         Friends
       </button>
       <div className="overflow-auto h-full">
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
-        <UserCard username="test" />
+      {friends?.map((friend) => (
+          <div key={friend._id}>
+            <UserCard user={friend} />
+          </div>
+        ))}
       </div>
     </div>
   );

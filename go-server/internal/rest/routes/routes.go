@@ -79,5 +79,4 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 		}
 
 	}
-
 }

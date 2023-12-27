@@ -12,7 +12,7 @@ const Userinfo = () => {
 
   return (
     <div className="bg-base-300 p-2 flex  items-center justify-between">
-      {user && <UserCard username={user?.name} />}
+      {user && <UserCard user={user} />}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="w-auto h-6 hover:cursor-pointer"
