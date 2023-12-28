@@ -1,6 +1,6 @@
 import { useContext } from "react";
-import UserCard from "./UserCard";
 import AuthContext from "../context/AuthContext";
+import UserCard from "./UserCard";
 
 const Userinfo = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -10,9 +10,15 @@ const Userinfo = () => {
     setUser(null);
   };
 
+  const copyIdHandler = () => {
+    if (!user) return;
+
+    navigator.clipboard.writeText(user._id)
+  }
+
   return (
-    <div className="bg-base-300 p-2 flex  items-center justify-between">
-      {user && <UserCard user={user} online={true} />}
+    <div className="bg-base-300 p-2 py-4 flex  items-center justify-between">
+      {user && <UserCard user={user} onClick={copyIdHandler} online={true}/>}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="w-auto h-6 hover:cursor-pointer"
