@@ -101,7 +101,6 @@ func (r *UserRepository) GetUserFriends(ctx context.Context, userId string) ([]m
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(friends)
 	return friends, nil
 }
 
