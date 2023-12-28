@@ -22,7 +22,7 @@ export const ChatContext = createContext<ChatContextProps>({
   friends: null,
   setFriends: () => {},
   currentChat: null,
-  setCurrentChat: () => {}
+  setCurrentChat: () => {},
 });
 
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
@@ -45,10 +45,12 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       console.log(friends);
     };
     getFriends();
-  }, [user?._id]); 
+  }, [user?._id]);
 
   return (
-    <ChatContext.Provider value={{ friends, setFriends, currentChat, setCurrentChat}}>
+    <ChatContext.Provider
+      value={{ friends, setFriends, currentChat, setCurrentChat }}
+    >
       {children}
     </ChatContext.Provider>
   );

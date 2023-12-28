@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { ChatContext } from "../context/ChatContext";
+import Message from "./Message";
 
 const Chatbox = () => {
   const { currentChat } = useContext(ChatContext);
@@ -16,6 +17,10 @@ const Chatbox = () => {
               </div>
             </div>
             <p>{currentChat.name}</p>
+          </div>
+
+          <div className="flex-grow p-3">
+            <Message name="m" content="hi"/>
           </div>
 
           <div className="p-4">
