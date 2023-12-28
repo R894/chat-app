@@ -1,9 +1,11 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import UserCard from "./UserCard";
+import Alert from "./Alert";
 
 const Userinfo = () => {
   const { user, setUser } = useContext(AuthContext);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const logoutHandler = () => {
     localStorage.removeItem("user");
@@ -13,12 +15,17 @@ const Userinfo = () => {
   const copyIdHandler = () => {
     if (!user) return;
 
-    navigator.clipboard.writeText(user._id)
-  }
+    navigator.clipboard.writeText(user._id);
+    setAlertMessage("Copied to clipboard");
+
+    setTimeout(() => {
+      setAlertMessage("");
+    }, 3000);
+  };
 
   return (
     <div className="bg-base-300 p-2 py-4 flex  items-center justify-between">
-      {user && <UserCard user={user} onClick={copyIdHandler} online={true}/>}
+      {user && <UserCard user={user} onClick={copyIdHandler} online={true} />}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="w-auto h-6 hover:cursor-pointer"
@@ -37,6 +44,7 @@ const Userinfo = () => {
           d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"
         />
       </svg>
+      {alertMessage && <Alert message={alertMessage} />}
     </div>
   );
 };
