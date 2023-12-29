@@ -1,14 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { ChatContext } from "../context/ChatContext";
-import Message from "./Message";
+import MessageComponent from "./Message";
 import { postRequest, baseUrl, getRequest } from "../utils/services";
 import AuthContext from "../context/AuthContext";
-interface Message {
-  id: string;
-  chatId: string;
-  senderId: string;
-  text: string;
-}
+import { Message } from "../types/types";
 
 const Chatbox = () => {
   const { user } = useContext(AuthContext);
@@ -87,17 +82,15 @@ const Chatbox = () => {
             <p>{currentChatUser.name}</p>
           </div>
 
-          <div className="flex-grow p-3">
+          <div className="flex-grow p-3 overflow-y-auto">
             {messages &&
               messages.map((message, index) => (
-                <Message
+                <MessageComponent
                   key={index}
                   name={
-                    message.senderId === user?._id // this feels like a really bad way to handle this
-                      ? user.name
-                      : currentChatUser.name
+                    message.userName
                   }
-                  content={message.text}
+                  content={message.message.text}
                 />
               ))}
           </div>

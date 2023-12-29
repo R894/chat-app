@@ -14,7 +14,7 @@ const UserCard: FC<UserCardProps> = ({ user, online, onClick }) => {
 
   return (
     <div
-      className="flex gap-2 hover:bg-base-100 p-2 rounded-md hover:cursor-pointer"
+      className="flex gap-2 hover:bg-base-100 p-1 rounded-md hover:cursor-pointer"
       onClick={onClick ? onClick: () => setCurrentChatUser(user)}
     >
       <Avatar name={user.name} online={online} />
