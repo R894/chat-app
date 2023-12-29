@@ -10,12 +10,12 @@ interface UserCardProps {
 }
 
 const UserCard: FC<UserCardProps> = ({ user, online, onClick }) => {
-  const { setCurrentChat } = useContext(ChatContext);
+  const { setCurrentChatUser } = useContext(ChatContext);
 
   return (
     <div
       className="flex gap-2 hover:bg-base-100 p-2 rounded-md hover:cursor-pointer"
-      onClick={onClick ? onClick: () => setCurrentChat(user)}
+      onClick={onClick ? onClick: () => setCurrentChatUser(user)}
     >
       <Avatar name={user.name} online={online} />
       <p>{user.name}</p>

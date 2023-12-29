@@ -14,20 +14,20 @@ import AuthContext from "./AuthContext";
 interface ChatContextProps {
   friends: User[] | null;
   setFriends: Dispatch<SetStateAction<User[] | null>>;
-  currentChat: User | null;
-  setCurrentChat: Dispatch<User | null>;
+  currentChatUser: User | null;
+  setCurrentChatUser: Dispatch<User | null>;
 }
 
 export const ChatContext = createContext<ChatContextProps>({
   friends: null,
   setFriends: () => {},
-  currentChat: null,
-  setCurrentChat: () => {},
+  currentChatUser: null,
+  setCurrentChatUser: () => {},
 });
 
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [friends, setFriends] = useState<User[] | null>(null);
-  const [currentChat, setCurrentChat] = useState<User | null>(null);
+  const [currentChatUser, setCurrentChatUser] = useState<User | null>(null);
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ChatContext.Provider
-      value={{ friends, setFriends, currentChat, setCurrentChat }}
+      value={{ friends, setFriends, currentChatUser, setCurrentChatUser }}
     >
       {children}
     </ChatContext.Provider>
