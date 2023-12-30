@@ -2,14 +2,17 @@ import { useContext, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import UserCard from "./UserCard";
 import Alert from "./Alert";
+import { useNavigate } from "react-router-dom";
 
 const Userinfo = () => {
   const { user, setUser } = useContext(AuthContext);
   const [alertMessage, setAlertMessage] = useState("");
+  const navigate = useNavigate();
 
   const logoutHandler = () => {
     localStorage.removeItem("user");
     setUser(null);
+    navigate('/login')
   };
 
   const copyIdHandler = () => {
