@@ -75,12 +75,8 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"_id":       user.ID,
-		"name":      user.Name,
-		"email":     user.Email,
-		"createdAt": user.CreatedAt,
-		"updatedAt": user.UpdatedAt,
-		"token":     key,
+		"user":  user,
+		"token": key,
 	})
 }
 
@@ -159,9 +155,7 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"_id":   user.ID,
-		"name":  user.Name,
-		"email": user.Email,
+		"user":  user,
 		"token": key})
 }
 

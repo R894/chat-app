@@ -13,6 +13,6 @@ type User struct {
 	Password        string             `bson:"password,omitempty" json:"-"`
 	CreatedAt       time.Time          `bson:"createdAt,omitempty" json:"createdAt"`
 	UpdatedAt       time.Time          `bson:"updatedAt,omitempty" json:"updatedAt"`
-	PendingRequests []string           `bson:"pendingRequests,omitempty" json:"pendingRequests,omitempty"`
+	PendingRequests []string           `bson:"pendingRequests" json:"pendingRequests"`
 	FriendsList     []string           `bson:"friendsList,omitempty" json:"friendsList"`
 }
