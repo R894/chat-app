@@ -2,6 +2,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  pendingRequests: string[];
   token?: string | null;
 }
 export interface Message {

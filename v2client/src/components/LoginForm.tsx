@@ -20,8 +20,9 @@ const LoginForm = () => {
         console.log(response.error);
         return;
       }
-      localStorage.setItem("user", JSON.stringify(response));
-      setUser(response);
+      const userWithToken = { ...response.user, token: response.token };
+      localStorage.setItem("user", JSON.stringify(userWithToken));
+      setUser(userWithToken);
       console.log("Logged in as:", response);
     } catch (err) {
       console.error("An error occurred:", err);

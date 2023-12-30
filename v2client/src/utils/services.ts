@@ -45,3 +45,13 @@ export const getRequest = async (url: string) => {
 
   return data;
 };
+
+export const getUserById = async(id: string)=>{
+  const response = await getRequest(`${baseUrl}/users/find/${id}`)
+
+  if (response.error){
+    console.log(response.error);
+    return;
+  }
+  return response
+}

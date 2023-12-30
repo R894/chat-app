@@ -8,11 +8,12 @@ import {
   useState,
 } from "react";
 import { User } from "../types/types";
-import { postRequest, baseUrl } from "../utils/services";
+import { postRequest, baseUrl, getUserById } from "../utils/services";
 import AuthContext from "./AuthContext";
 
 interface ChatContextProps {
   friends: User[] | null;
+  friendRequests: User[];
   setFriends: Dispatch<SetStateAction<User[] | null>>;
   currentChatUser: User | null;
   setCurrentChatUser: Dispatch<User | null>;
@@ -20,6 +21,7 @@ interface ChatContextProps {
 
 export const ChatContext = createContext<ChatContextProps>({
   friends: null,
+  friendRequests: [],
   setFriends: () => {},
   currentChatUser: null,
   setCurrentChatUser: () => {},
@@ -28,6 +30,7 @@ export const ChatContext = createContext<ChatContextProps>({
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [friends, setFriends] = useState<User[] | null>(null);
   const [currentChatUser, setCurrentChatUser] = useState<User | null>(null);
+  const [friendRequests, setFriendRequests] = useState<User[]>([]);
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -47,9 +50,29 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
     getFriends();
   }, [user?._id]);
 
+  useEffect(() => {
+    const getFriendRequests = async () => {
+      if (!user || !user.pendingRequests) return;
+
+      const requestsData = await Promise.all(
+        user.pendingRequests.map(async (pendingFriendRequestId) => {
+          const response = await getUserById(pendingFriendRequestId);
+          if (response.error) {
+            console.error(response);
+          }
+          return response;
+        })
+      );
+
+      setFriendRequests(requestsData);
+    };
+
+    getFriendRequests();
+  }, [user]);
+
   return (
     <ChatContext.Provider
-      value={{ friends, setFriends, currentChatUser, setCurrentChatUser }}
+      value={{ friends, setFriends, friendRequests, currentChatUser, setCurrentChatUser }}
     >
       {children}
     </ChatContext.Provider>
