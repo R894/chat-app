@@ -1,14 +1,17 @@
-import { useContext, useEffect, useState } from "react";
-import { ChatContext } from "../context/ChatContext";
-import MessageComponent from "./Message";
-import { postRequest, baseUrl, getRequest } from "../utils/services";
-import AuthContext from "../context/AuthContext";
-import { Message } from "../types/types";
+import React, { useContext, useEffect, useState } from "react";
+import { ChatContext } from "../../context/ChatContext";
+import { postRequest, baseUrl, getRequest } from "../../utils/services";
+import AuthContext from "../../context/AuthContext";
+import { Message } from "../../types/types";
+import ChatHeader from "./ChatHeader";
+import MessageList from "./MessageList";
+import ChatInput from "./ChatInput";
 
 const Chatbox = () => {
   const { user } = useContext(AuthContext);
   const { currentChatUser } = useContext(ChatContext);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [isChatLoading, setIsChatLoading] = useState(false);
   const [messages, setMessages] = useState<Message[] | null>();
   const [text, setText] = useState("");
 
@@ -38,12 +41,12 @@ const Chatbox = () => {
 
   useEffect(() => {
     if (!user || !currentChatUser) return;
-
     const getChatId = async (userId: string, friendId: string) => {
       const response = await postRequest(
         `${baseUrl}/chats/`,
         JSON.stringify({ firstId: userId, secondId: friendId })
       );
+      setIsChatLoading(false);
       if (!response || response.error) {
         return console.error("Error creating chat", response);
       }
@@ -56,63 +59,44 @@ const Chatbox = () => {
   useEffect(() => {
     const getMessages = async () => {
       if (!currentChatUser || !currentChatId || !user) return;
+
+      setIsChatLoading(true);
+
       console.log(`${baseUrl}/messages/${currentChatId}`);
       const response = await getRequest(`${baseUrl}/messages/${currentChatId}`);
       if (!response || response.error) {
         return console.log("error", response);
+      } else {
+        setMessages(response);
       }
-      setMessages(response);
+      setIsChatLoading(false);
     };
     getMessages();
     console.log(messages);
   }, [currentChatId, user, currentChatUser]);
-
+  
   return (
     <>
-      {currentChatUser ? (
+      {currentChatUser && messages ? (
         <div className="flex flex-col justify-between flex-grow">
-          <div className="nav shadow-md p-3 flex gap-2">
-            <div className="avatar placeholder">
-              <div className="bg-neutral text-neutral-content rounded-full w-6">
-                <span className="text-xs">
-                  {currentChatUser.name[0].toUpperCase()}
-                </span>
-              </div>
-            </div>
-            <p>{currentChatUser.name}</p>
-          </div>
+          <ChatHeader user={currentChatUser} />
 
-          <div className="flex-grow p-3 overflow-y-auto">
-            {messages &&
-              messages.map((message, index) => (
-                <MessageComponent
-                  key={index}
-                  name={
-                    message.userName
-                  }
-                  content={message.message.text}
-                />
-              ))}
-          </div>
+          {currentChatId === messages[0].message.chatId && <MessageList messages={messages} />}
 
-          <div className="p-4">
-            <input
-              type="text"
-              placeholder="Type here..."
-              className="input input-bordered w-full border focus:outline-none"
-              onChange={handleInputChange}
-              onKeyDown={handleInputKeyDown}
-              value={text}
-            />
-          </div>
+          <ChatInput
+            text={text}
+            handleInputChange={handleInputChange}
+            handleInputKeyDown={handleInputKeyDown}
+          />
         </div>
       ) : (
         <div className="flex flex-grow justify-center items-center">
-          Idk some main menu or something
+          {isChatLoading ? 'Loading...' : ''}
         </div>
       )}
     </>
   );
+
 };
 
 export default Chatbox;

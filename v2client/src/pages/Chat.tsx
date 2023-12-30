@@ -1,4 +1,4 @@
-import Chatbox from "../components/Chatbox";
+import Chatbox from "../components/Chatbox/Chatbox";
 import Userinfo from "../components/UserInfo";
 import UserList from "../components/UserList";
 
