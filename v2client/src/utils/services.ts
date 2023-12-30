@@ -46,12 +46,22 @@ export const getRequest = async (url: string) => {
   return data;
 };
 
-export const getUserById = async(id: string)=>{
-  const response = await getRequest(`${baseUrl}/users/find/${id}`)
+export const getUserById = async (id: string) => {
+  const response = await getRequest(`${baseUrl}/users/find/${id}`);
 
-  if (response.error){
+  if (response.error) {
     console.log(response.error);
     return;
   }
-  return response
-}
+  return response;
+};
+
+export const acceptFriendRequest = async (userId: string, friendId: string) => {
+  const response = await postRequest(`${baseUrl}/users/friends/accept`, JSON.stringify({userId, friendId}));
+
+  if (response.error) {
+    console.log(response.error);
+    return;
+  }
+  return response;
+};

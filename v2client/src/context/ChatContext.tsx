@@ -14,6 +14,7 @@ import AuthContext from "./AuthContext";
 interface ChatContextProps {
   friends: User[] | null;
   friendRequests: User[];
+  setFriendRequests: Dispatch<SetStateAction<User[]>>;
   setFriends: Dispatch<SetStateAction<User[] | null>>;
   currentChatUser: User | null;
   setCurrentChatUser: Dispatch<User | null>;
@@ -22,6 +23,7 @@ interface ChatContextProps {
 export const ChatContext = createContext<ChatContextProps>({
   friends: null,
   friendRequests: [],
+  setFriendRequests: () => {},
   setFriends: () => {},
   currentChatUser: null,
   setCurrentChatUser: () => {},
@@ -72,7 +74,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ChatContext.Provider
-      value={{ friends, setFriends, friendRequests, currentChatUser, setCurrentChatUser }}
+      value={{ friends, setFriends, friendRequests, setFriendRequests, currentChatUser, setCurrentChatUser }}
     >
       {children}
     </ChatContext.Provider>
