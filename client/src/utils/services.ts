@@ -57,7 +57,26 @@ export const getUserById = async (id: string) => {
 };
 
 export const acceptFriendRequest = async (userId: string, friendId: string) => {
-  const response = await postRequest(`${baseUrl}/users/friends/accept`, JSON.stringify({userId, friendId}));
+  const response = await postRequest(
+    `${baseUrl}/users/friends/accept`,
+    JSON.stringify({ userId, friendId })
+  );
+
+  if (response.error) {
+    console.log(response.error);
+    return;
+  }
+  return response;
+};
+
+export const declineFriendRequest = async (
+  userId: string,
+  friendId: string
+) => {
+  const response = await postRequest(
+    `${baseUrl}/users/friends/decline`,
+    JSON.stringify({ userId, friendId })
+  );
 
   if (response.error) {
     console.log(response.error);
