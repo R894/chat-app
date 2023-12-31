@@ -66,6 +66,9 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 			users.POST("/friends/accept", func(c *gin.Context) {
 				handlers.AcceptFriendRequest(c, repo)
 			})
+			users.POST("/friends/decline", func(c *gin.Context) {
+				handlers.DeclineFriendRequest(c, repo)
+			})
 		}
 
 		messages := routes.Group("/messages")

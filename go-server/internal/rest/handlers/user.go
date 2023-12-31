@@ -110,6 +110,22 @@ func AcceptFriendRequest(c *gin.Context, r *repository.Repository) {
 
 }
 
+func DeclineFriendRequest(c *gin.Context, r *repository.Repository) {
+	var request FriendRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_, err := r.Users.DeleteFriendRequest(c, request.UserId, request.FriendId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "friend request accepted"})
+}
+
 func SendFriendRequest(c *gin.Context, r *repository.Repository) {
 	var friendRequest FriendRequest
 	if err := c.ShouldBindJSON(&friendRequest); err != nil {

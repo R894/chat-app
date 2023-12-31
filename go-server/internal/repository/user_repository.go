@@ -150,7 +150,7 @@ func (r *UserRepository) DeleteFriendRequest(ctx context.Context, userId, friend
 	// remove friendId from pendingRequests array
 	user.PendingRequests = utils.RemoveStringFromArray(user.PendingRequests, friendId)
 
-	// update the friend document in the database
+	// update the user document in the database
 	update := bson.M{"$set": bson.M{"pendingRequests": user.PendingRequests}}
 	_, err = r.collection.UpdateOne(ctx, primitive.M{"_id": userObjId}, update)
 	if err != nil {
