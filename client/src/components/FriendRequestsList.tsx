@@ -3,6 +3,7 @@ import UserCard from "./UserCard";
 import { ChatContext } from "../context/ChatContext";
 import { acceptFriendRequest, declineFriendRequest } from "../utils/services";
 import AuthContext from "../context/AuthContext";
+import AddFriend from "./AddFriend";
 
 const FriendRequestsList = () => {
   const { friendRequests } = useContext(ChatContext);
@@ -28,7 +29,9 @@ const FriendRequestsList = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="nav shadow-md p-3 flex gap-2">Friend Requests</div>
+      <div className="nav shadow-md p-3 flex justify-between items-center gap-2">Friend Requests
+        <AddFriend/>
+      </div>
       <div className="p-4">
         {friendRequests.length > 0 ? (
           friendRequests.map((request, index) => (

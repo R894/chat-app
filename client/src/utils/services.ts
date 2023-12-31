@@ -84,3 +84,19 @@ export const declineFriendRequest = async (
   }
   return response;
 };
+
+export const addFriend = async (
+  userId: string,
+  friendId: string
+) => {
+  const response = await postRequest(
+    `${baseUrl}/users/friends/add`,
+    JSON.stringify({ userId, friendId })
+  );
+
+  if (response.error) {
+    console.log(response.error);
+    return;
+  }
+  return response;
+};
