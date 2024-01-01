@@ -46,57 +46,97 @@ export const getRequest = async (url: string) => {
   return data;
 };
 
-export const getUserById = async (id: string) => {
-  const response = await getRequest(`${baseUrl}/users/find/${id}`);
+export const api = {
+  addFriend: async (userId: string, friendId: string) => {
+    const response = await postRequest(
+      `${baseUrl}/users/friends/add`,
+      JSON.stringify({ userId, friendId })
+    );
 
-  if (response.error) {
-    console.log(response.error);
-    return;
-  }
-  return response;
-};
+    if (response.error) {
+      console.log(response.error);
+      return;
+    }
+    return response;
+  },
 
-export const acceptFriendRequest = async (userId: string, friendId: string) => {
-  const response = await postRequest(
-    `${baseUrl}/users/friends/accept`,
-    JSON.stringify({ userId, friendId })
-  );
+  acceptFriendRequest: async (userId: string, friendId: string) => {
+    const response = await postRequest(
+      `${baseUrl}/users/friends/accept`,
+      JSON.stringify({ userId, friendId })
+    );
 
-  if (response.error) {
-    console.log(response.error);
-    return;
-  }
-  return response;
-};
+    if (response.error) {
+      console.log(response.error);
+      return;
+    }
+    return response;
+  },
 
-export const declineFriendRequest = async (
-  userId: string,
-  friendId: string
-) => {
-  const response = await postRequest(
-    `${baseUrl}/users/friends/decline`,
-    JSON.stringify({ userId, friendId })
-  );
+  declineFriendRequest: async (userId: string, friendId: string) => {
+    const response = await postRequest(
+      `${baseUrl}/users/friends/decline`,
+      JSON.stringify({ userId, friendId })
+    );
 
-  if (response.error) {
-    console.log(response.error);
-    return;
-  }
-  return response;
-};
+    if (response.error) {
+      console.log(response.error);
+      return;
+    }
+    return response;
+  },
 
-export const addFriend = async (
-  userId: string,
-  friendId: string
-) => {
-  const response = await postRequest(
-    `${baseUrl}/users/friends/add`,
-    JSON.stringify({ userId, friendId })
-  );
+  getUserById: async (id: string) => {
+    const response = await getRequest(`${baseUrl}/users/find/${id}`);
 
-  if (response.error) {
-    console.log(response.error);
-    return;
-  }
-  return response;
+    if (response.error) {
+      console.log(response.error);
+      return;
+    }
+    return response;
+  },
+
+  sendMessage: async (chatId: string, senderId: string, text: string) => {
+    const response = await postRequest(
+      `${baseUrl}/messages/`,
+      JSON.stringify({ chatId: chatId, senderId: senderId, text: text })
+    );
+    if (!response || response.error) {
+      console.error("Error sending message", response);
+      return;
+    }
+    return response;
+  },
+
+  getChatId: async (firstId: string, secondId: string) => {
+    const response = await postRequest(
+      `${baseUrl}/chats/`,
+      JSON.stringify({ firstId, secondId })
+    );
+    if (!response || response.error) {
+      console.error("Error creating chat", response);
+      return;
+    }
+    return response;
+  },
+
+  getMessages: async (currentChatId: string) => {
+    console.log(`${baseUrl}/messages/${currentChatId}`);
+    const response = await getRequest(`${baseUrl}/messages/${currentChatId}`);
+    if (!response) {
+      console.log("error", response);
+      return;
+    }
+    return response;
+  },
+
+  getFriends: async (userId: string) => {
+    const response = await postRequest(
+      `${baseUrl}/users/friends`,
+      JSON.stringify({ userId })
+    );
+    if (response.error) {
+      return console.log("Error fetching users", response);
+    }
+  },
 };
