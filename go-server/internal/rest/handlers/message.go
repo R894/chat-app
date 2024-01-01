@@ -25,7 +25,19 @@ func CreateMessage(c *gin.Context, r *repository.Repository) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, message)
+
+	user, err := r.Users.FindByID(c, message.SenderId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	messageWithUser := MessageWithUser{
+		Message:  *message,
+		UserName: user.Name,
+	}
+
+	c.JSON(http.StatusOK, messageWithUser)
 }
 
 func GetMessages(c *gin.Context, r *repository.Repository) {
