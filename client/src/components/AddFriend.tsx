@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import AuthContext from "../context/AuthContext";
-import { addFriend } from "../utils/services";
+import { api } from "../utils/services";
 
 const AddFriend = () => {
   const [text, setText] = useState("");
@@ -9,7 +9,7 @@ const AddFriend = () => {
   const handleSendFriendRequest = async () => {
     if (!user) return;
 
-    const response = addFriend(user?._id, text);
+    const response = api.addFriend(user?._id, text);
     if (!response) {
       console.error("Something went wrong");
     }

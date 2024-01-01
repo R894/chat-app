@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import UserCard from "./UserCard";
 import { ChatContext } from "../context/ChatContext";
-import { acceptFriendRequest, declineFriendRequest } from "../utils/services";
 import AuthContext from "../context/AuthContext";
 import AddFriend from "./AddFriend";
+import { api } from "../utils/services";
 
 const FriendRequestsList = () => {
   const { friendRequests } = useContext(ChatContext);
@@ -11,7 +11,7 @@ const FriendRequestsList = () => {
 
   const handleAcceptFriendRequest = async (friendId: string) => {
     if (!user) return;
-    const response = await acceptFriendRequest(user._id, friendId);
+    const response = await api.acceptFriendRequest(user._id, friendId);
     if (!response || response.error) {
       console.error(response);
       return;
@@ -19,8 +19,8 @@ const FriendRequestsList = () => {
   };
 
   const handleDeclineFriendRequest = async (friendId: string) => {
-    if (!user) return;
-    const response = await declineFriendRequest(user._id, friendId);
+    if (!user) return; 
+    const response = await api.declineFriendRequest(user._id, friendId);
     if (!response || response.error) {
       console.error(response);
       return;
