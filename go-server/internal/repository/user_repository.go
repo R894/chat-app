@@ -45,6 +45,33 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*models.User,
 	return &user, nil
 }
 
+func (r *UserRepository) FindMultipleById(ctx context.Context, userIds []string) ([]*models.User, error) {
+	var objectIDs []primitive.ObjectID
+	for _, userID := range userIds {
+		objectID, err := primitive.ObjectIDFromHex(userID)
+		if err != nil {
+			return nil, err
+		}
+		objectIDs = append(objectIDs, objectID)
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": objectIDs}}
+
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var users []*models.User
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (r *UserRepository) GetAllUsers(ctx context.Context) ([]*models.User, error) {
 	cursor, err := r.collection.Find(ctx, bson.M{})
 	if err != nil {
