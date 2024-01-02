@@ -11,6 +11,7 @@ import {
 import { Message, User } from "../types/types";
 import { postRequest, baseUrl, api } from "../utils/services";
 import AuthContext from "./AuthContext";
+import { Socket, io } from "socket.io-client";
 
 interface ChatContextProps {
   friends: User[] | null;
@@ -41,7 +42,7 @@ export const ChatContext = createContext<ChatContextProps>({
   sendMessage: async () => {},
   isChatLoading: false,
   messages: [],
-  currentChatId:'',
+  currentChatId: "",
   setMessages: () => {},
 });
 
@@ -52,7 +53,22 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [friendRequests, setFriendRequests] = useState<User[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    const newSocket = io("http://localhost:3000");
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (socket === null) return;
+    socket.emit("addNewUser", user?._id);
+  }, [socket, user?._id]);
 
   useEffect(() => {
     const getFriends = async () => {
@@ -154,6 +170,19 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
     getMessages();
   }, [currentChatId, currentChatUser, user]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("getMessage", (message) => {
+      console.log("Received message:", message);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    return () => {
+      socket.off("getMessage");
+    };
+  }, [socket]);
+
   const sendMessage = useCallback(
     async (
       text: string,
@@ -162,22 +191,23 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       setText: (text: string) => void
     ) => {
       try {
-        if (!text) return;
-        console.log("sending message...")
+        if (!text || !socket || !currentChatUser) return;
         const response = await api.sendMessage(currentChatId, senderId, text);
-
+        setText("");
         if (!response) {
           console.log("Error sending message");
         } else {
-          console.log("got response", response)
-          setText("");
           setMessages((prevMessages) => [...prevMessages, response])
+          socket.emit("sendMessage", {
+            ...response,
+            recipientId: currentChatUser._id,
+          });
         }
       } catch (error) {
         console.error("Error in sendMessage:", error);
       }
     },
-    []
+    [currentChatUser, socket]
   );
 
   return (
@@ -193,7 +223,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         isChatLoading,
         messages,
         setMessages,
-        currentChatId
+        currentChatId,
       }}
     >
       {children}
