@@ -1,17 +1,24 @@
-import { useContext } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { Message } from "../../types/types";
 import MessageComponent from "../Message";
 import { ChatContext } from "../../context/ChatContext";
 
 const MessageList = ({ messages }: { messages: Message[] }) => {
   const {isChatLoading} = useContext(ChatContext);
+  const messageListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    }
+  }, [messages, isChatLoading]);
 
   if (!messages) {
     return;
   }
 
   return (
-    <div className="flex-grow p-3 overflow-y-auto">
+    <div ref={messageListRef} className="flex-grow p-3 overflow-y-auto">
       {!isChatLoading? messages.map((message, index) => (
         <MessageComponent
           key={index}
