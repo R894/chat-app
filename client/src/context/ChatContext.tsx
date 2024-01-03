@@ -13,6 +13,11 @@ import { postRequest, baseUrl, api } from "../utils/services";
 import AuthContext from "./AuthContext";
 import { Socket, io } from "socket.io-client";
 
+interface OnlineUser {
+  userId: string
+  socketId: string;
+}
+
 interface ChatContextProps {
   friends: User[] | null;
   friendRequests: User[];
@@ -30,6 +35,7 @@ interface ChatContextProps {
   isChatLoading: boolean;
   messages: Message[];
   setMessages: Dispatch<Message[]>;
+  onlineUsers: OnlineUser[];
 }
 
 export const ChatContext = createContext<ChatContextProps>({
@@ -44,6 +50,7 @@ export const ChatContext = createContext<ChatContextProps>({
   messages: [],
   currentChatId: "",
   setMessages: () => {},
+  onlineUsers: []
 });
 
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
@@ -54,6 +61,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState([])
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -183,6 +191,19 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [socket]);
 
+  useEffect(()=> {
+    if (!socket) return;
+
+    socket.on("getOnlineUsers", (users)=> {
+      console.log("setting online users to", users)
+      setOnlineUsers(users)
+      console.log(onlineUsers)
+    })
+    return () => {
+      socket.off("getMessage");
+    };
+  }, [socket])
+
   const sendMessage = useCallback(
     async (
       text: string,
@@ -224,6 +245,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         messages,
         setMessages,
         currentChatId,
+        onlineUsers
       }}
     >
       {children}
