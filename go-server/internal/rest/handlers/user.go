@@ -249,7 +249,7 @@ func GetUsers(c *gin.Context, r *repository.Repository) {
 // @ID get-user-friends
 // @Accept  json
 // @Produce  json
-// @Param   userId     path    string     true        "ID of the user"
+// @Param   request     body    GetUserFriendsRequest     true        "JSON request to get the friends of a user"
 // @Success 200 {array} models.User  "Returns the list of user's friends"
 // @Router /users/friends [post]
 func GetUserFriends(c *gin.Context, r *repository.Repository) {

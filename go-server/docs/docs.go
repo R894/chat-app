@@ -219,11 +219,13 @@ const docTemplate = `{
                 "operationId": "get-user-friends",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "ID of the user",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
+                        "description": "JSON request to get the friends of a user",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GetUserFriendsRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -441,6 +443,17 @@ const docTemplate = `{
                 "friendId": {
                     "type": "string"
                 },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.GetUserFriendsRequest": {
+            "type": "object",
+            "required": [
+                "userId"
+            ],
+            "properties": {
                 "userId": {
                     "type": "string"
                 }

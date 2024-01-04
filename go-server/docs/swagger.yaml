@@ -10,6 +10,13 @@ definitions:
     - friendId
     - userId
     type: object
+  handlers.GetUserFriendsRequest:
+    properties:
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
   handlers.LoginRequest:
     properties:
       email:
@@ -279,11 +286,12 @@ paths:
       description: Retrieves the friends of a user.
       operationId: get-user-friends
       parameters:
-      - description: ID of the user
-        in: path
-        name: userId
+      - description: JSON request to get the friends of a user
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.GetUserFriendsRequest'
       produces:
       - application/json
       responses:
