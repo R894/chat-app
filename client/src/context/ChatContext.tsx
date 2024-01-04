@@ -14,7 +14,7 @@ import AuthContext from "./AuthContext";
 import { Socket, io } from "socket.io-client";
 
 interface OnlineUser {
-  userId: string
+  userId: string;
   socketId: string;
 }
 
@@ -50,7 +50,7 @@ export const ChatContext = createContext<ChatContextProps>({
   messages: [],
   currentChatId: "",
   setMessages: () => {},
-  onlineUsers: []
+  onlineUsers: [],
 });
 
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
@@ -61,148 +61,162 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState([])
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const { user } = useContext(AuthContext);
 
-  useEffect(() => {
+  const SOCKET_EVENTS = {
+    getMessage: "getMessage",
+    getOnlineUsers: "getOnlineUsers",
+    addNewUser: "addNewUser",
+  };
+
+  const initializeSocket = () => {
     const newSocket = io("http://localhost:3000");
     setSocket(newSocket);
+    return newSocket;
+  };
+
+  const setupSocketListeners = useCallback(
+    (socket: Socket | null) => {
+      if (!socket) return;
+
+      socket.on(SOCKET_EVENTS.getMessage, (message) => {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      });
+
+      socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
+        setOnlineUsers(users);
+      });
+    },
+    [SOCKET_EVENTS.getMessage, SOCKET_EVENTS.getOnlineUsers]
+  );
+
+  const getFriends = useCallback(async () => {
+    try {
+      if (!user) return;
+
+      const response = await postRequest(
+        `${baseUrl}/users/friends`,
+        JSON.stringify({ userId: user._id })
+      );
+      if (response) {
+        setFriends(response);
+      }
+
+    } catch (error) {
+      console.error("Error in getFriends:", error);
+    }
+  }, [user]);
+
+  const getChatId = useCallback(async () => {
+    try {
+      if (!user || !currentChatUser) return;
+
+      const response = await api.getChatId(user._id, currentChatUser._id);
+      if (response && !response.error) {
+        setCurrentChatId(response._id);
+      } 
+    } catch (error) {
+      console.error("Error in getChatId:", error);
+    }
+  }, [currentChatUser, user]);
+
+  useEffect(() => {
+    const newSocket = initializeSocket();
+    setupSocketListeners(newSocket);
 
     return () => {
       newSocket.disconnect();
     };
-  }, [user]);
+  }, [user, setupSocketListeners]);
 
-  useEffect(() => {
-    if (socket === null) return;
-    socket.emit("addNewUser", user?._id);
-  }, [socket, user?._id]);
+  const getFriendRequests = useCallback(async () => {
+    try {
+      if (!user || !user.pendingRequests) return;
 
-  useEffect(() => {
-    const getFriends = async () => {
-      try {
-        if (!user) return;
+      const requestsData = await Promise.all(
+        user.pendingRequests.map(async (pendingFriendRequestId) => {
+          try {
+            const response = await api.getUserById(pendingFriendRequestId);
 
-        const response = await postRequest(
-          `${baseUrl}/users/friends`,
-          JSON.stringify({ userId: user._id })
-        );
-
-        if (!response.error) {
-          setFriends(response);
-        } else {
-          console.log("Error fetching users", response);
-        }
-      } catch (error) {
-        console.error("Error in getFriends:", error);
-      }
-    };
-
-    getFriends();
-  }, [user?._id]);
-
-  useEffect(() => {
-    const getChatId = async () => {
-      try {
-        if (!user || !currentChatUser) return;
-
-        const response = await api.getChatId(user._id, currentChatUser._id);
-
-        if (response && !response.error) {
-          setCurrentChatId(response._id);
-        } else {
-          console.log("Error fetching current chat", response);
-        }
-      } catch (error) {
-        console.error("Error in getChatId:", error);
-      }
-    };
-
-    getChatId();
-  }, [currentChatUser, user]);
-
-  useEffect(() => {
-    const getFriendRequests = async () => {
-      try {
-        if (!user || !user.pendingRequests) return;
-
-        const requestsData = await Promise.all(
-          user.pendingRequests.map(async (pendingFriendRequestId) => {
-            try {
-              const response = await api.getUserById(pendingFriendRequestId);
-
-              if (!response.error) {
-                return response;
-              } else {
-                console.error(response);
-                return null;
-              }
-            } catch (error) {
-              console.error("Error in getFriendRequests map:", error);
+            if (!response.error) {
+              return response;
+            } else {
+              console.error(response);
               return null;
             }
-          })
-        );
+          } catch (error) {
+            console.error("Error in getFriendRequests map:", error);
+            return null;
+          }
+        })
+      );
 
-        const filteredRequestsData = requestsData.filter(Boolean);
-        setFriendRequests(filteredRequestsData);
-      } catch (error) {
-        console.error("Error in getFriendRequests:", error);
-      }
-    };
-
-    getFriendRequests();
+      const filteredRequestsData = requestsData.filter(Boolean);
+      setFriendRequests(filteredRequestsData);
+    } catch (error) {
+      console.error("Error in getFriendRequests:", error);
+    }
   }, [user]);
 
-  useEffect(() => {
-    const getMessages = async () => {
-      try {
-        if (!currentChatId || !currentChatUser || !user) return;
+  const getMessages = useCallback(async () => {
+    try {
+      if (!currentChatId || !currentChatUser || !user) return;
+      setIsChatLoading(true);
+      const response = await api.getMessages(currentChatId);
 
-        setIsChatLoading(true);
-
-        const response = await api.getMessages(currentChatId);
-
-        if (response) {
-          setMessages(response);
-        } else {
-          console.log("Error getting messages:", response);
-        }
-      } catch (error) {
-        console.error("Error in getMessages:", error);
-      } finally {
-        setIsChatLoading(false);
+      if (response) {
+        setMessages(response);
       }
-    };
+    } catch (error) {
+      console.error("Error in getMessages:", error);
+    } finally {
+      setIsChatLoading(false);
+    }
+  }, [currentChatId, user, currentChatUser]);
 
+  useEffect(() => {
+    if (socket === null || !user) return;
+    socket.emit(SOCKET_EVENTS.addNewUser, user._id);
+  }, [socket, user, SOCKET_EVENTS.addNewUser]);
+
+  useEffect(() => {
+    getFriends();
+  }, [getFriends]);
+
+  useEffect(() => {
+    getChatId();
+  }, [getChatId]);
+
+  useEffect(() => {
+    getFriendRequests();
+  }, [getFriendRequests]);
+
+  useEffect(() => {
     getMessages();
-  }, [currentChatId, currentChatUser, user]);
+  }, [getMessages]);
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("getMessage", (message) => {
-      console.log("Received message:", message);
+    socket.on(SOCKET_EVENTS.getMessage, (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
     return () => {
-      socket.off("getMessage");
+      socket.off(SOCKET_EVENTS.getMessage);
     };
-  }, [socket]);
+  }, [socket, SOCKET_EVENTS.getMessage]);
 
-  useEffect(()=> {
+  useEffect(() => {
     if (!socket) return;
-
-    socket.on("getOnlineUsers", (users)=> {
-      console.log("setting online users to", users)
-      setOnlineUsers(users)
-      console.log(onlineUsers)
-    })
+    socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
+      setOnlineUsers(users);
+    });
     return () => {
-      socket.off("getMessage");
+      socket.off(SOCKET_EVENTS.getOnlineUsers);
     };
-  }, [socket])
+  }, [socket, SOCKET_EVENTS.getOnlineUsers]);
 
   const sendMessage = useCallback(
     async (
@@ -215,10 +229,8 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         if (!text || !socket || !currentChatUser) return;
         const response = await api.sendMessage(currentChatId, senderId, text);
         setText("");
-        if (!response) {
-          console.log("Error sending message");
-        } else {
-          setMessages((prevMessages) => [...prevMessages, response])
+        if (response) {
+          setMessages((prevMessages) => [...prevMessages, response]);
           socket.emit("sendMessage", {
             ...response,
             recipientId: currentChatUser._id,
@@ -245,7 +257,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         messages,
         setMessages,
         currentChatId,
-        onlineUsers
+        onlineUsers,
       }}
     >
       {children}
