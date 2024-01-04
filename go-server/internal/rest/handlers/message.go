@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	_ "go-chatserver/docs"
 	"go-chatserver/internal/models"
 	"go-chatserver/internal/repository"
 	"net/http"
@@ -14,6 +15,14 @@ type MessageWithUser struct {
 	UserName string         `json:"userName"`
 }
 
+// @Summary Create a new message in a chat
+// @Description Creates a new message in a chat and returns the message along with the sender's username.
+// @ID create-message
+// @Accept  json
+// @Produce  json
+// @Param   request     body    repository.CreateMessageRequest     true        "JSON request to create a message"
+// @Success 200 {object} MessageWithUser  "Returns the created message with the sender's username"
+// @Router /messages [post]
 func CreateMessage(c *gin.Context, r *repository.Repository) {
 	var createMessageRequest repository.CreateMessageRequest
 	if err := c.ShouldBindJSON(&createMessageRequest); err != nil {
@@ -41,6 +50,14 @@ func CreateMessage(c *gin.Context, r *repository.Repository) {
 	c.JSON(http.StatusOK, messageWithUser)
 }
 
+// @Summary Get messages in a chat
+// @Description Retrieves messages in a chat, including sender usernames, and returns them sorted by creation date.
+// @ID get-messages
+// @Accept  json
+// @Produce  json
+// @Param   chatId     path    string     true        "ID of the chat"
+// @Success 200 {array} MessageWithUser  "Returns the list of messages in the chat with sender usernames"
+// @Router /messages/{chatId} [get]
 func GetMessages(c *gin.Context, r *repository.Repository) {
 	chatID := c.Param("chatId")
 

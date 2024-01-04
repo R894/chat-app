@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -82,4 +84,5 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 		}
 
 	}
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

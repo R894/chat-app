@@ -1,0 +1,404 @@
+basePath: /api
+definitions:
+  handlers.FriendRequest:
+    properties:
+      friendId:
+        type: string
+      userId:
+        type: string
+    required:
+    - friendId
+    - userId
+    type: object
+  handlers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  handlers.MessageWithUser:
+    properties:
+      message:
+        $ref: '#/definitions/models.Message'
+      userName:
+        type: string
+    type: object
+  models.Chat:
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      members:
+        items:
+          type: string
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  models.Message:
+    properties:
+      _id:
+        type: string
+      chatId:
+        type: string
+      createdAt:
+        type: string
+      senderId:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.User:
+    properties:
+      _id:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      friendsList:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      pendingRequests:
+        items:
+          type: string
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  repository.CreateChatRequest:
+    properties:
+      firstId:
+        type: string
+      secondId:
+        type: string
+    required:
+    - firstId
+    - secondId
+    type: object
+  repository.CreateMessageRequest:
+    properties:
+      chatId:
+        type: string
+      senderId:
+        type: string
+      text:
+        type: string
+    required:
+    - chatId
+    - senderId
+    - text
+    type: object
+  repository.RegisterUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 15
+        minLength: 4
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+host: localhost:5000
+info:
+  contact: {}
+  description: This is a chat API
+  title: Chat API
+  version: "1.0"
+paths:
+  /chats:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new chat between two users or returns an existing chat
+        if one already exists.
+      operationId: create-chat
+      parameters:
+      - description: JSON request to create a chat
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the created or existing chat
+          schema:
+            $ref: '#/definitions/models.Chat'
+      summary: Create a new chat or return an existing one
+  /chats/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all chats for a given user.
+      operationId: find-user-chats
+      parameters:
+      - description: ID of the user
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the list of user's chats
+          schema:
+            items:
+              $ref: '#/definitions/models.Chat'
+            type: array
+      summary: Get all chats for a specific user
+  /chats/find/{firstId}/{secondId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a chat between two specified users.
+      operationId: find-chat
+      parameters:
+      - description: ID of the first user
+        in: path
+        name: firstId
+        required: true
+        type: string
+      - description: ID of the second user
+        in: path
+        name: secondId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the chat between the specified users
+          schema:
+            $ref: '#/definitions/models.Chat'
+      summary: Get a chat between two specific users
+  /messages:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new message in a chat and returns the message along with
+        the sender's username.
+      operationId: create-message
+      parameters:
+      - description: JSON request to create a message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the created message with the sender's username
+          schema:
+            $ref: '#/definitions/handlers.MessageWithUser'
+      summary: Create a new message in a chat
+  /messages/{chatId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves messages in a chat, including sender usernames, and returns
+        them sorted by creation date.
+      operationId: get-messages
+      parameters:
+      - description: ID of the chat
+        in: path
+        name: chatId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the list of messages in the chat with sender usernames
+          schema:
+            items:
+              $ref: '#/definitions/handlers.MessageWithUser'
+            type: array
+      summary: Get messages in a chat
+  /users/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all users.
+      operationId: get-users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the list of all users
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Get all users
+  /users/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a user by their ID.
+      operationId: find-user
+      parameters:
+      - description: ID of the user
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the user with the specified ID
+          schema:
+            $ref: '#/definitions/models.User'
+      summary: Find a user by ID
+  /users/friends:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves the friends of a user.
+      operationId: get-user-friends
+      parameters:
+      - description: ID of the user
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the list of user's friends
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      summary: Get friends of a user
+  /users/friends/accept:
+    post:
+      consumes:
+      - application/json
+      description: Accepts a friend request between two users.
+      operationId: accept-friend-request
+      parameters:
+      - description: JSON request to accept a friend request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a success message
+          schema:
+            type: object
+      summary: Accept a friend request
+  /users/friends/add:
+    post:
+      consumes:
+      - application/json
+      description: Sends a friend request from one user to another.
+      operationId: send-friend-request
+      parameters:
+      - description: JSON request to send a friend request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a success message
+          schema:
+            type: object
+      summary: Send a friend request
+  /users/friends/decline:
+    post:
+      consumes:
+      - application/json
+      description: Declines a friend request between two users.
+      operationId: decline-friend-request
+      parameters:
+      - description: JSON request to decline a friend request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a success message
+          schema:
+            type: object
+      summary: Decline a friend request
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user based on their email and password, returning
+        the user information and a JWT token.
+      operationId: login-user
+      parameters:
+      - description: JSON request to log in a user
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the authenticated user and a JWT token
+          schema:
+            type: object
+      summary: Login user
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user and returns the user information along with
+        a JWT token.
+      operationId: register-user
+      parameters:
+      - description: JSON request to register a new user
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/repository.RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the registered user and a JWT token
+          schema:
+            type: object
+      summary: Register a new user
+swagger: "2.0"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "go-chatserver/docs"
 	"go-chatserver/internal/database"
 	"go-chatserver/internal/rest"
 	"log"
@@ -11,6 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title           Chat API
+// @version         1.0
+// @description     This is a chat API
+// @host      localhost:5000
+// @BasePath  /api
 func main() {
 	router := gin.Default()
 	db, err := database.Init()

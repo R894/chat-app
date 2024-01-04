@@ -25,6 +25,14 @@ type FriendRequest struct {
 	FriendId string `json:"friendId" binding:"required"`
 }
 
+// @Summary Find a user by ID
+// @Description Retrieves a user by their ID.
+// @ID find-user
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "ID of the user"
+// @Success 200 {object} models.User  "Returns the user with the specified ID"
+// @Router /users/{userId} [get]
 func FindUser(c *gin.Context, r *repository.Repository) {
 	id := c.Param("userId")
 	result, err := r.Users.FindByID(c, id)
@@ -39,6 +47,14 @@ func FindUser(c *gin.Context, r *repository.Repository) {
 	c.JSON(http.StatusOK, result)
 }
 
+// @Summary Register a new user
+// @Description Registers a new user and returns the user information along with a JWT token.
+// @ID register-user
+// @Accept  json
+// @Produce  json
+// @Param   request     body    repository.RegisterUserRequest     true        "JSON request to register a new user"
+// @Success 200 {object} object  "Returns the registered user and a JWT token"
+// @Router /users/register [post]
 func RegisterUser(c *gin.Context, r *repository.Repository) {
 	validate := validator.New()
 	var registerRequest repository.RegisterUserRequest
@@ -80,6 +96,14 @@ func RegisterUser(c *gin.Context, r *repository.Repository) {
 	})
 }
 
+// @Summary Accept a friend request
+// @Description Accepts a friend request between two users.
+// @ID accept-friend-request
+// @Accept  json
+// @Produce  json
+// @Param   request     body    FriendRequest     true        "JSON request to accept a friend request"
+// @Success 200 {object} object  "Returns a success message"
+// @Router /users/friends/accept [post]
 func AcceptFriendRequest(c *gin.Context, r *repository.Repository) {
 	var request FriendRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -110,6 +134,14 @@ func AcceptFriendRequest(c *gin.Context, r *repository.Repository) {
 
 }
 
+// @Summary Decline a friend request
+// @Description Declines a friend request between two users.
+// @ID decline-friend-request
+// @Accept  json
+// @Produce  json
+// @Param   request     body    FriendRequest     true        "JSON request to decline a friend request"
+// @Success 200 {object} object  "Returns a success message"
+// @Router /users/friends/decline [post]
 func DeclineFriendRequest(c *gin.Context, r *repository.Repository) {
 	var request FriendRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -126,6 +158,14 @@ func DeclineFriendRequest(c *gin.Context, r *repository.Repository) {
 	c.JSON(http.StatusOK, gin.H{"message": "friend request accepted"})
 }
 
+// @Summary Send a friend request
+// @Description Sends a friend request from one user to another.
+// @ID send-friend-request
+// @Accept  json
+// @Produce  json
+// @Param   request     body    FriendRequest     true        "JSON request to send a friend request"
+// @Success 200 {object} object  "Returns a success message"
+// @Router /users/friends/add [post]
 func SendFriendRequest(c *gin.Context, r *repository.Repository) {
 	var friendRequest FriendRequest
 	if err := c.ShouldBindJSON(&friendRequest); err != nil {
@@ -142,6 +182,14 @@ func SendFriendRequest(c *gin.Context, r *repository.Repository) {
 	c.JSON(http.StatusOK, gin.H{"message": "Friend request sent"})
 }
 
+// @Summary Login user
+// @Description Authenticates a user based on their email and password, returning the user information and a JWT token.
+// @ID login-user
+// @Accept  json
+// @Produce  json
+// @Param   request     body    LoginRequest     true        "JSON request to log in a user"
+// @Success 200 {object} object  "Returns the authenticated user and a JWT token"
+// @Router /users/login [post]
 func LoginUser(c *gin.Context, r *repository.Repository) {
 	var loginRequest LoginRequest
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
@@ -175,6 +223,13 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 		"token": key})
 }
 
+// @Summary Get all users
+// @Description Retrieves all users.
+// @ID get-users
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} models.User  "Returns the list of all users"
+// @Router /users/ [get]
 func GetUsers(c *gin.Context, r *repository.Repository) {
 	users, err := r.Users.GetAllUsers(c)
 	if err != nil {
@@ -189,6 +244,14 @@ func GetUsers(c *gin.Context, r *repository.Repository) {
 	c.JSON(http.StatusOK, users)
 }
 
+// @Summary Get friends of a user
+// @Description Retrieves the friends of a user.
+// @ID get-user-friends
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "ID of the user"
+// @Success 200 {array} models.User  "Returns the list of user's friends"
+// @Router /users/friends [post]
 func GetUserFriends(c *gin.Context, r *repository.Repository) {
 	var userId GetUserFriendsRequest
 	if err := c.ShouldBindJSON(&userId); err != nil {

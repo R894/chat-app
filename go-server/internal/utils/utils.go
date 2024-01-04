@@ -1,5 +1,9 @@
 package utils
 
+import (
+	_ "go-chatserver/docs"
+)
+
 // RemoveStringFromArray removes a certain string from an array
 func RemoveStringFromArray(arr []string, target string) []string {
 	var result []string
