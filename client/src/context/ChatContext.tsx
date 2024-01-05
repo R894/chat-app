@@ -22,7 +22,7 @@ interface ChatContextProps {
   friends: User[] | null;
   friendRequests: User[];
   setFriendRequests: Dispatch<SetStateAction<User[]>>;
-  setFriends: Dispatch<SetStateAction<User[] | null>>;
+  setFriends: Dispatch<SetStateAction<User[]>>;
   currentChatUser: User | null;
   setCurrentChatUser: Dispatch<User | null>;
   currentChatId: string;
@@ -39,7 +39,7 @@ interface ChatContextProps {
 }
 
 export const ChatContext = createContext<ChatContextProps>({
-  friends: null,
+  friends: [],
   friendRequests: [],
   setFriendRequests: () => {},
   setFriends: () => {},
@@ -54,7 +54,7 @@ export const ChatContext = createContext<ChatContextProps>({
 });
 
 export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
-  const [friends, setFriends] = useState<User[] | null>(null);
+  const [friends, setFriends] = useState<User[]>([]);
   const [currentChatUser, setCurrentChatUser] = useState<User | null>(null);
   const [currentChatId, setCurrentChatId] = useState("");
   const [friendRequests, setFriendRequests] = useState<User[]>([]);
@@ -62,7 +62,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
 
   const SOCKET_EVENTS = {
     getMessage: "getMessage",
@@ -100,7 +100,12 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         JSON.stringify({ userId: user._id }),
         user.token
       );
-      if (response) {
+      if(response.error){
+        // This is a very bad way to check if the user is still authorized
+        localStorage.removeItem("user")
+        setUser(null)
+      }
+      if (response && !response.error) {
         setFriends(response);
       }
     } catch (error) {
@@ -117,7 +122,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         currentChatUser._id,
         user.token
       );
-      if (response && !response.error) {
+      if (response) {
         setCurrentChatId(response._id);
       }
     } catch (error) {
