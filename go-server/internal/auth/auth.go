@@ -16,6 +16,9 @@ type UserClaims struct {
 
 func GenerateJwtKey(id string) (string, error) {
 	key := []byte(os.Getenv("JWT_SECRET"))
+	if len(key) == 0 {
+		return "", fmt.Errorf("JWT_SECRET not set")
+	}
 	claims := UserClaims{
 		Id: id,
 		StandardClaims: jwt.StandardClaims{
@@ -35,6 +38,9 @@ func GenerateJwtKey(id string) (string, error) {
 
 func ValidateJwtKey(tokenString string) (*UserClaims, error) {
 	key := []byte(os.Getenv("JWT_SECRET"))
+	if len(key) == 0 {
+		return nil, fmt.Errorf("JWT_SECRET not set")
+	}
 
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
