@@ -7,9 +7,9 @@ const AddFriend = () => {
   const { user } = useContext(AuthContext);
 
   const handleSendFriendRequest = async () => {
-    if (!user) return;
+    if (!user || !user.token) return;
 
-    const response = api.addFriend(user?._id, text);
+    const response = api.addFriend(user._id, text, user.token);
     if (!response) {
       console.error("Something went wrong");
     }

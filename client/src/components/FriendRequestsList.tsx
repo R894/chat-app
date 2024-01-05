@@ -7,11 +7,12 @@ import { api } from "../utils/services";
 
 const FriendRequestsList = () => {
   const { friendRequests } = useContext(ChatContext);
-  const { user } = useContext(AuthContext);
+  const { user, updateUser } = useContext(AuthContext);
 
   const handleAcceptFriendRequest = async (friendId: string) => {
-    if (!user) return;
-    const response = await api.acceptFriendRequest(user._id, friendId);
+    if (!user || !user.token) return;
+    const response = await api.acceptFriendRequest(user._id, friendId, user.token);
+    updateUser();
     if (!response || response.error) {
       console.error(response);
       return;
@@ -19,8 +20,9 @@ const FriendRequestsList = () => {
   };
 
   const handleDeclineFriendRequest = async (friendId: string) => {
-    if (!user) return; 
-    const response = await api.declineFriendRequest(user._id, friendId);
+    if (!user || !user.token) return; 
+    const response = await api.declineFriendRequest(user._id, friendId, user.token);
+    updateUser();
     if (!response || response.error) {
       console.error(response);
       return;
@@ -34,8 +36,8 @@ const FriendRequestsList = () => {
       </div>
       <div className="p-4">
         {friendRequests.length > 0 ? (
-          friendRequests.map((request, index) => (
-            <div key={index} className="flex items-center gap-2">
+          friendRequests.map((request) => (
+            <div key={request._id} className="flex items-center gap-2">
               <UserCard user={request} />
               <div className="flex gap-1">
                 <button
