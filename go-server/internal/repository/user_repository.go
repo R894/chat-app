@@ -106,6 +106,10 @@ func (r *UserRepository) GetUserFriends(ctx context.Context, userId string) ([]m
 		return nil, err
 	}
 
+	if len(user.FriendsList) < 1 {
+		return []models.User{}, nil
+	}
+
 	// convert friendslist strings to objectIds because im dumb and didnt do that before
 	var objectIds []primitive.ObjectID
 	for _, friendId := range user.FriendsList {
