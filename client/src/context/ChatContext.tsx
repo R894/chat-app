@@ -81,7 +81,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       if (!socket) return;
 
       socket.on(SOCKET_EVENTS.getMessage, (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        setMessages((prevMessages) => [...prevMessages || null, message]);
       });
 
       socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
@@ -145,7 +145,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         setFriendRequests([])
         return
       }
-      
+
       const requestsData = await Promise.all(
         user.pendingRequests.map(async (pendingFriendRequestId) => {
           try {
@@ -213,18 +213,6 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!socket) return;
-
-    socket.on(SOCKET_EVENTS.getMessage, (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    return () => {
-      socket.off(SOCKET_EVENTS.getMessage);
-    };
-  }, [socket, SOCKET_EVENTS.getMessage]);
-
-  useEffect(() => {
-    if (!socket) return;
     socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
       setOnlineUsers(users);
     });
@@ -245,7 +233,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         const response = await api.sendMessage(currentChatId, senderId, text, user.token);
         setText("");
         if (response) {
-          setMessages((prevMessages) => [...prevMessages, response]);
+          setMessages((prevMessages) => [...prevMessages || null, response]);
           socket.emit("sendMessage", {
             ...response,
             recipientId: currentChatUser._id,
@@ -255,7 +243,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error in sendMessage:", error);
       }
     },
-    [currentChatUser, socket, user?.token]
+    [currentChatUser, socket,  user?.token]
   );
 
   return (
