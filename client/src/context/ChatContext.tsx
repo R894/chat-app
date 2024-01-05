@@ -97,12 +97,12 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
       const response = await postRequest(
         `${baseUrl}/users/friends`,
-        JSON.stringify({ userId: user._id })
+        JSON.stringify({ userId: user._id }),
+        user.token
       );
       if (response) {
         setFriends(response);
       }
-
     } catch (error) {
       console.error("Error in getFriends:", error);
     }
@@ -110,12 +110,16 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   const getChatId = useCallback(async () => {
     try {
-      if (!user || !currentChatUser) return;
+      if (!user || !currentChatUser || !user.token) return;
 
-      const response = await api.getChatId(user._id, currentChatUser._id);
+      const response = await api.getChatId(
+        user._id,
+        currentChatUser._id,
+        user.token
+      );
       if (response && !response.error) {
         setCurrentChatId(response._id);
-      } 
+      }
     } catch (error) {
       console.error("Error in getChatId:", error);
     }
@@ -137,7 +141,11 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       const requestsData = await Promise.all(
         user.pendingRequests.map(async (pendingFriendRequestId) => {
           try {
-            const response = await api.getUserById(pendingFriendRequestId);
+            if (!user.token) return;
+            const response = await api.getUserById(
+              pendingFriendRequestId,
+              user.token
+            );
 
             if (!response.error) {
               return response;
@@ -161,9 +169,9 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   const getMessages = useCallback(async () => {
     try {
-      if (!currentChatId || !currentChatUser || !user) return;
+      if (!currentChatId || !currentChatUser || !user || !user.token) return;
       setIsChatLoading(true);
-      const response = await api.getMessages(currentChatId);
+      const response = await api.getMessages(currentChatId, user.token);
 
       if (response) {
         setMessages(response);
@@ -226,8 +234,8 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       setText: (text: string) => void
     ) => {
       try {
-        if (!text || !socket || !currentChatUser) return;
-        const response = await api.sendMessage(currentChatId, senderId, text);
+        if (!text || !socket || !currentChatUser || !user?.token) return;
+        const response = await api.sendMessage(currentChatId, senderId, text, user.token);
         setText("");
         if (response) {
           setMessages((prevMessages) => [...prevMessages, response]);

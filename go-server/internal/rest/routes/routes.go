@@ -1,8 +1,11 @@
 package routes
 
 import (
+	"go-chatserver/internal/auth"
 	"go-chatserver/internal/repository"
 	"go-chatserver/internal/rest/handlers"
+	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -10,14 +13,20 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
+// AuthRequired is a middleware that validates whether the users JWT bearer token is valid
+func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
+		authHeader := c.GetHeader("Authorization")
+
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
+
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
+		if _, err := auth.ValidateJwtKey(token); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 
@@ -27,11 +36,17 @@ func CORSMiddleware() gin.HandlerFunc {
 
 // SetupRoutes takes in a gin router and sets up the routes
 func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AddAllowHeaders("Authorization")
+	router.Use(cors.New(config))
+
 	routes := router.Group("/api")
 	{
 		chats := routes.Group("/chats")
 		{
+			chats.Use(AuthRequired())
+
 			chats.POST("/", func(c *gin.Context) {
 				handlers.CreateChat(c, repo)
 			})
@@ -56,25 +71,34 @@ func SetupRoutes(router *gin.Engine, repo *repository.Repository) {
 			users.POST("/login", func(c *gin.Context) {
 				handlers.LoginUser(c, repo)
 			})
-			users.GET("/find/:userId", func(c *gin.Context) {
+
+		}
+
+		usersProtected := routes.Group("/users")
+		{
+			usersProtected.Use(AuthRequired())
+
+			usersProtected.GET("/find/:userId", func(c *gin.Context) {
 				handlers.FindUser(c, repo)
 			})
-			users.POST("/friends", func(c *gin.Context) {
+			usersProtected.POST("/friends", func(c *gin.Context) {
 				handlers.GetUserFriends(c, repo)
 			})
-			users.POST("/friends/add", func(c *gin.Context) {
+			usersProtected.POST("/friends/add", func(c *gin.Context) {
 				handlers.SendFriendRequest(c, repo)
 			})
-			users.POST("/friends/accept", func(c *gin.Context) {
+			usersProtected.POST("/friends/accept", func(c *gin.Context) {
 				handlers.AcceptFriendRequest(c, repo)
 			})
-			users.POST("/friends/decline", func(c *gin.Context) {
+			usersProtected.POST("/friends/decline", func(c *gin.Context) {
 				handlers.DeclineFriendRequest(c, repo)
 			})
 		}
 
 		messages := routes.Group("/messages")
 		{
+			messages.Use(AuthRequired())
+
 			messages.POST("/", func(c *gin.Context) {
 				handlers.CreateMessage(c, repo)
 			})
