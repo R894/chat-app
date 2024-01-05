@@ -80,6 +80,11 @@ func GetMessages(c *gin.Context, r *repository.Repository) {
 		}
 	}
 
+	if len(userIdsMap) < 1 {
+		c.JSON(http.StatusOK, messagesWithUser)
+		return
+	}
+
 	// retrieve users in batch
 	users, err := r.Users.FindMultipleById(c, userIds)
 	if err != nil {
