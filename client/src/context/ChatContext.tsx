@@ -141,8 +141,11 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
 
   const getFriendRequests = useCallback(async () => {
     try {
-      if (!user || !user.pendingRequests) return;
-
+      if (!user || !user.pendingRequests) {
+        setFriendRequests([])
+        return
+      }
+      
       const requestsData = await Promise.all(
         user.pendingRequests.map(async (pendingFriendRequestId) => {
           try {
@@ -165,8 +168,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         })
       );
 
-      const filteredRequestsData = requestsData.filter(Boolean);
-      setFriendRequests(filteredRequestsData);
+      setFriendRequests(requestsData.filter(Boolean));
     } catch (error) {
       console.error("Error in getFriendRequests:", error);
     }
@@ -253,7 +255,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error in sendMessage:", error);
       }
     },
-    [currentChatUser, socket]
+    [currentChatUser, socket, user?.token]
   );
 
   return (
