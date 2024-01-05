@@ -19,7 +19,7 @@ interface OnlineUser {
 }
 
 interface ChatContextProps {
-  friends: User[] | null;
+  friends: User[];
   friendRequests: User[];
   setFriendRequests: Dispatch<SetStateAction<User[]>>;
   setFriends: Dispatch<SetStateAction<User[]>>;
