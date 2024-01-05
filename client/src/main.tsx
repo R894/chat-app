@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthContextProvider>
         <ChatContextProvider>
-        <App />
+          <App />
         </ChatContextProvider>
       </AuthContextProvider>
     </BrowserRouter>
