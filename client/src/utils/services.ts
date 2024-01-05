@@ -51,10 +51,11 @@ export const getRequest = async (url: string, token?: string | null) => {
 };
 
 export const api = {
-  addFriend: async (userId: string, friendId: string) => {
+  addFriend: async (userId: string, friendId: string, token: string) => {
     const response = await postRequest(
       `${baseUrl}/users/friends/add`,
-      JSON.stringify({ userId, friendId })
+      JSON.stringify({ userId, friendId }),
+      token
     );
 
     if (response.error) {
