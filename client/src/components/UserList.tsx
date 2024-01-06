@@ -3,13 +3,15 @@ import UserCard from "./UserCard";
 import { ChatContext } from "../context/ChatContext";
 import { useNavigate } from "react-router-dom";
 import { User } from "../types/types";
+import AuthContext from "../context/AuthContext";
 
 const UserList = () => {
-  const { friends } = useContext(ChatContext);
+  const { updateUser} = useContext(AuthContext)
   const navigate = useNavigate();
-  const { onlineUsers } = useContext(ChatContext);
+  const { onlineUsers, friends } = useContext(ChatContext);
 
   const handleOnClick = () => {
+    updateUser();
     navigate("/requests");
   };
 
