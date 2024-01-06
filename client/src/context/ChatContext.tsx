@@ -81,7 +81,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       if (!socket) return;
 
       socket.on(SOCKET_EVENTS.getMessage, (message) => {
-        setMessages((prevMessages) => [...prevMessages || null, message]);
+        setMessages((prevMessages) => [...prevMessages ?? [], message]);
       });
 
       socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
@@ -233,7 +233,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         const response = await api.sendMessage(currentChatId, senderId, text, user.token);
         setText("");
         if (response) {
-          setMessages((prevMessages) => [...prevMessages || null, response]);
+          setMessages((prevMessages) => [...prevMessages ?? [], response]);
           socket.emit("sendMessage", {
             ...response,
             recipientId: currentChatUser._id,
