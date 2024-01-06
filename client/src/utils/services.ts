@@ -131,8 +131,11 @@ export const api = {
 
   getMessages: async (currentChatId: string, token: string) => {
     const response = await getRequest(`${baseUrl}/messages/${currentChatId}`, token);
-    if (!response) {
+    if (response.error){
       console.log("error", response);
+      return;
+    }
+    if (!response) {
       return;
     }
     return response;
