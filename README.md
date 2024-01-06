@@ -8,6 +8,7 @@ Welcome to Chatter! This app provides a simple real-time chat experience, featur
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+  - [Using Docker](#using-docker)
 - [Usage](#usage)
 - [Folder Structure](#folder-structure)
 - [API Documentation](#api-documentation)
@@ -55,6 +56,17 @@ Before running the application, make sure you have the following installed:
     npm install
     npx tsc
     ```
+
+### Using docker
+If you prefer to use Docker for running the application, follow these steps:
+
+1. **Build and Run Docker Containers:**
+    ```bash
+    docker-compose up
+    ```
+2. **Access the app**
+
+    Open your web browser and go to http://localhost:5173 to access the app.
 
 ## Usage
 1. **Run the golang backend:**
