@@ -21,11 +21,11 @@ type server struct {
 	repository *repository.Repository
 }
 
-func NewServer(db *mongo.Client, router *gin.Engine) *server {
+func NewServer(db *mongo.Client, router *gin.Engine, dbName string) *server {
 	return &server{
 		db:         db,
 		router:     router,
-		repository: repository.NewRepository(db.Database("chatApp")), // Hardcode for now im lazy lol
+		repository: repository.NewRepository(db.Database(dbName)),
 	}
 }
 

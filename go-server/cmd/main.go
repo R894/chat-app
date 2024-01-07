@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	srv := rest.NewServer(db, router)
+	srv := rest.NewServer(db, router, "chatApp")
 	if err := srv.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
