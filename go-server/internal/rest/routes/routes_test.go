@@ -23,6 +23,32 @@ type testServer struct {
 	cleanup func()
 }
 
+// performRequest performs an HTTP request to the specified server using the given method, path, and request body
+func performRequest(t *testing.T, srv testServer, method, path, bearerToken string, body interface{}) (*httptest.ResponseRecorder, map[string]interface{}) {
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		log.Fatal("Error marshaling JSON:", err)
+	}
+
+	req, err := http.NewRequest(method, path, bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	assert.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	srv.router.ServeHTTP(w, req)
+
+	var responseBody map[string]interface{}
+	err = json.NewDecoder(w.Body).Decode(&responseBody)
+	if err != nil {
+		log.Fatal("Error decoding response body:", err)
+	}
+
+	return w, responseBody
+}
+
+// setupTestServer initializes and returns a testServer for unit tests
+// the servers router, repository and cleanup function are returned
 func setupTestServer() testServer {
 	projectRoot, err := filepath.Abs("../../..")
 	if err != nil {
@@ -40,7 +66,6 @@ func setupTestServer() testServer {
 		log.Fatal(err)
 	}
 	routes.SetupRoutes(router, repo)
-	// add auth middleware
 	srv := testServer{router: router, repo: repo, cleanup: cleanup}
 
 	return srv
@@ -48,24 +73,39 @@ func setupTestServer() testServer {
 
 func TestCreateChatUnauthorized(t *testing.T) {
 	srv := setupTestServer()
-
 	requestBody := map[string]interface{}{
 		"firstId":  "12312312312",
 		"secondId": "32132131231",
 	}
 
-	jsonBody, err := json.Marshal(requestBody)
-	if err != nil {
-		log.Fatal("Error marshaling JSON:", err)
+	w, _ := performRequest(t, srv, "POST", "/api/chats/", "", requestBody)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+
+	srv.cleanup()
+}
+
+func TestCreateChatAuthorized(t *testing.T) {
+	srv := setupTestServer()
+
+	requestBody := map[string]interface{}{
+		"email":    "johndoe@gmail.com",
+		"password": "johndoe",
 	}
 
-	req, err := http.NewRequest("POST", "/api/chats/", bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
-	assert.NoError(t, err)
+	w, body := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
 
-	w := httptest.NewRecorder()
-	srv.router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	token, ok := body["token"].(string)
+	if !ok {
+		t.Fatalf("Token not found in login response")
+	}
+
+	requestBody = map[string]interface{}{
+		"firstId":  "12312312312",
+		"secondId": "32132131231",
+	}
+
+	w, _ = performRequest(t, srv, "POST", "/api/chats/", token, requestBody)
+	assert.Equal(t, http.StatusOK, w.Code)
 
 	srv.cleanup()
 }
@@ -76,19 +116,19 @@ func TestLoginValid(t *testing.T) {
 		"email":    "johndoe@gmail.com",
 		"password": "johndoe",
 	}
-
-	jsonBody, err := json.Marshal(requestBody)
-	if err != nil {
-		log.Fatal("Error marshaling JSON:", err)
-	}
-
-	req, err := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(jsonBody))
-	req.Header.Set("Content-Type", "application/json")
-	assert.NoError(t, err)
-
-	w := httptest.NewRecorder()
-	srv.router.ServeHTTP(w, req)
+	w, _ := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
 	assert.Equal(t, http.StatusOK, w.Code)
+	srv.cleanup()
+}
+
+func TestLoginInvalid(t *testing.T) {
+	srv := setupTestServer()
+	requestBody := map[string]interface{}{
+		"email":    "johndoe@gmail.com",
+		"password": "notjohn",
+	}
+	w, _ := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 
 	srv.cleanup()
 }
