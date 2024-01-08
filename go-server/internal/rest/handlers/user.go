@@ -209,13 +209,13 @@ func LoginUser(c *gin.Context, r *repository.Repository) {
 
 	err = auth.VerifyPassword(user.Password, loginRequest.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	key, err := auth.GenerateJwtKey(user.ID.String())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Something went wrong"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
