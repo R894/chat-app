@@ -4,6 +4,7 @@ import AuthContext from "../../context/AuthContext";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
+import Wumpus from "../../assets/wumpus.svg";
 
 const Chatbox = () => {
   const { user } = useContext(AuthContext);
@@ -48,7 +49,13 @@ const Chatbox = () => {
         </div>
       ) : (
         <div className="flex flex-grow justify-center items-center">
-          {isChatLoading ? "Loading..." : ""}
+          {isChatLoading ? (
+            "Loading..."
+          ) : (
+            <div className="flex flex-col gap-4 items-center text-neutral-content">
+              <img className="opacity-50" src={Wumpus}/> No one's around to play with Wumpus.
+            </div>
+          )}
         </div>
       )}
     </>
