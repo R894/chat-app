@@ -71,6 +71,7 @@ func setupTestServer() testServer {
 	return srv
 }
 
+// TODO: Make these tests faster
 func TestCreateChatUnauthorized(t *testing.T) {
 	srv := setupTestServer()
 	requestBody := map[string]interface{}{
@@ -130,5 +131,16 @@ func TestLoginInvalid(t *testing.T) {
 	w, _ := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 
+	srv.cleanup()
+}
+
+func TestMessageInvalid(t *testing.T) {
+	srv := setupTestServer()
+	requestBody := map[string]interface{}{
+		"chatId": "123",
+		"userId": "555",
+	}
+	w, _ := performRequest(t, srv, "POST", "/api/messages/", "", requestBody)
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	srv.cleanup()
 }
