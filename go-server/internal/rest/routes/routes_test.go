@@ -3,6 +3,7 @@ package routes_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"go-chatserver/internal/repository"
 	"go-chatserver/internal/rest/routes"
 	"go-chatserver/internal/testdata"
@@ -142,5 +143,50 @@ func TestMessageInvalid(t *testing.T) {
 	}
 	w, _ := performRequest(t, srv, "POST", "/api/messages/", "", requestBody)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	srv.cleanup()
+}
+
+func TestMessagevalid(t *testing.T) {
+	srv := setupTestServer()
+
+	requestBody := map[string]interface{}{
+		"email":    "johndoe@gmail.com",
+		"password": "johndoe",
+	}
+
+	w, body := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
+
+	token, ok := body["token"].(string)
+	if !ok {
+		t.Fatalf("Token not found in login response")
+	}
+
+	userId, ok := body["user"].(map[string]interface{})["_id"].(string)
+	if !ok {
+		t.Fatalf("Userid not found in login response")
+	}
+
+	requestBody = map[string]interface{}{
+		"firstId":  "12312312312",
+		"secondId": "32132131231",
+	}
+
+	w, body = performRequest(t, srv, "POST", "/api/chats/", token, requestBody)
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	chatId, ok := body["_id"].(string)
+	if !ok {
+		t.Fatalf("Chat ID not found in response")
+	}
+
+	fmt.Println(chatId)
+
+	requestBody = map[string]interface{}{
+		"chatId":   chatId,
+		"senderId": userId,
+		"text":     "hello",
+	}
+	w, _ = performRequest(t, srv, "POST", "/api/messages/", token, requestBody)
+	assert.Equal(t, http.StatusOK, w.Code)
 	srv.cleanup()
 }
