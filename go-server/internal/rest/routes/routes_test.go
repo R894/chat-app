@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -73,8 +74,17 @@ func setupTestServer() testServer {
 }
 
 // TODO: Make these tests faster
+var srv testServer
+
+func TestMain(m *testing.M) {
+	srv = setupTestServer()
+	exitcode := m.Run()
+	srv.cleanup()
+
+	os.Exit(exitcode)
+}
+
 func TestCreateChatUnauthorized(t *testing.T) {
-	srv := setupTestServer()
 	requestBody := map[string]interface{}{
 		"firstId":  "12312312312",
 		"secondId": "32132131231",
@@ -82,13 +92,9 @@ func TestCreateChatUnauthorized(t *testing.T) {
 
 	w, _ := performRequest(t, srv, "POST", "/api/chats/", "", requestBody)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-
-	srv.cleanup()
 }
 
 func TestCreateChatAuthorized(t *testing.T) {
-	srv := setupTestServer()
-
 	requestBody := map[string]interface{}{
 		"email":    "johndoe@gmail.com",
 		"password": "johndoe",
@@ -108,47 +114,36 @@ func TestCreateChatAuthorized(t *testing.T) {
 
 	w, _ = performRequest(t, srv, "POST", "/api/chats/", token, requestBody)
 	assert.Equal(t, http.StatusOK, w.Code)
-
-	srv.cleanup()
 }
 
 func TestLoginValid(t *testing.T) {
-	srv := setupTestServer()
 	requestBody := map[string]interface{}{
 		"email":    "johndoe@gmail.com",
 		"password": "johndoe",
 	}
 	w, _ := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
 	assert.Equal(t, http.StatusOK, w.Code)
-	srv.cleanup()
 }
 
 func TestLoginInvalid(t *testing.T) {
-	srv := setupTestServer()
 	requestBody := map[string]interface{}{
 		"email":    "johndoe@gmail.com",
 		"password": "notjohn",
 	}
 	w, _ := performRequest(t, srv, "POST", "/api/users/login", "", requestBody)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-
-	srv.cleanup()
 }
 
 func TestMessageInvalid(t *testing.T) {
-	srv := setupTestServer()
 	requestBody := map[string]interface{}{
 		"chatId": "123",
 		"userId": "555",
 	}
 	w, _ := performRequest(t, srv, "POST", "/api/messages/", "", requestBody)
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
-	srv.cleanup()
 }
 
 func TestMessagevalid(t *testing.T) {
-	srv := setupTestServer()
-
 	requestBody := map[string]interface{}{
 		"email":    "johndoe@gmail.com",
 		"password": "johndoe",
@@ -188,5 +183,4 @@ func TestMessagevalid(t *testing.T) {
 	}
 	w, _ = performRequest(t, srv, "POST", "/api/messages/", token, requestBody)
 	assert.Equal(t, http.StatusOK, w.Code)
-	srv.cleanup()
 }
