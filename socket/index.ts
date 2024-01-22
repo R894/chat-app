@@ -28,13 +28,15 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", onlineUsers);
   });
 
-  socket.on("sendMessage", (message)=>{
-    const user = onlineUsers.find((user) => user.userId === message.recipientId)
+  socket.on("sendMessage", (message) => {
+    const user = onlineUsers.find(
+      (user) => user.userId === message.recipientId
+    );
 
-    if(user){
-      io.to(user.socketId).emit("getMessage", message)
+    if (user) {
+      io.to(user.socketId).emit("getMessage", message);
     }
-  })
+  });
 
   socket.on("disconnect", () => {
     onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
@@ -43,5 +45,5 @@ io.on("connection", (socket) => {
   });
 });
 
-console.log("Server running on port 3000")
+console.log("Server running on port 3000");
 io.listen(3000);
