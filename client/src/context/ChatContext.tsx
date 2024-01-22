@@ -81,7 +81,10 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
       if (!socket) return;
 
       socket.on(SOCKET_EVENTS.getMessage, (message) => {
-        setMessages((prevMessages) => [...prevMessages ?? [], message]);
+        if(message.chatId !== currentChatId) {
+          return;
+        }
+        setMessages((prevMessages) => [...(prevMessages ?? []), message]);
       });
 
       socket.on(SOCKET_EVENTS.getOnlineUsers, (users) => {
@@ -100,10 +103,10 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         JSON.stringify({ userId: user._id }),
         user.token
       );
-      if(response.error){
+      if (response.error) {
         // This is a very bad way to check if the user is still authorized
-        localStorage.removeItem("user")
-        setUser(null)
+        localStorage.removeItem("user");
+        setUser(null);
       }
       if (response && !response.error) {
         setFriends(response);
@@ -142,8 +145,8 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
   const getFriendRequests = useCallback(async () => {
     try {
       if (!user || !user.pendingRequests) {
-        setFriendRequests([])
-        return
+        setFriendRequests([]);
+        return;
       }
 
       const requestsData = await Promise.all(
@@ -230,10 +233,15 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
     ) => {
       try {
         if (!text || !socket || !currentChatUser || !user?.token) return;
-        const response = await api.sendMessage(currentChatId, senderId, text, user.token);
+        const response = await api.sendMessage(
+          currentChatId,
+          senderId,
+          text,
+          user.token
+        );
         setText("");
         if (response) {
-          setMessages((prevMessages) => [...prevMessages ?? [], response]);
+          setMessages((prevMessages) => [...(prevMessages ?? []), response]);
           socket.emit("sendMessage", {
             ...response,
             recipientId: currentChatUser._id,
@@ -243,7 +251,7 @@ export const ChatContextProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error in sendMessage:", error);
       }
     },
-    [currentChatUser, socket,  user?.token]
+    [currentChatUser, socket, user?.token]
   );
 
   return (
